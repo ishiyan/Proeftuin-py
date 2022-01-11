@@ -1,0 +1,22 @@
+IMPORTANT NOTE - READ FIRST
+
+Note on using Generators as Coroutines
+
+
+This section of the course is now only needed if you need to support code in older versions of the language, or if you need to create coroutines in an earlier version of Python that does not have async available.
+
+
+
+The use of generators for coroutines has been deprecated in Python 3.8 and is slated for removal in Python 3.10.
+
+See https://docs.python.org/3.8/library/asyncio-task.html#generator-based-coroutines
+
+The newer way of creating coroutines is via asyncio's async/await - you should no longer be creating coroutines using yield from. Async approach is also much easier to understand than generator based coroutines.
+
+This does not mean that the yield keyword is being deprecated!!
+
+You can very much still use it to create generators, e.g.
+
+def my_gen():
+    for i in range(10):
+        yield some_func(i)
