@@ -109,3 +109,17 @@ In this course we'll take an in-depth look at:
 - a brief introduction to some useful libraries such as JSONSchema, Marshmallow, PyYaml and Serpy
 
 ## Part 4
+
+This Python3: Deep Dive Part 4 course takes a closer look at object oriented programming (OOP) in Python.
+
+- what are classes and instances
+- class data and function attributes
+- properties
+- instance, class and static methods
+- polymorphism and the role special functions play in this
+- single inheritance
+- slots
+- the descriptor protocol and its relationship to properties and functions
+- enumerations
+- exceptions
+- metaprogramming (including metaclasses)
