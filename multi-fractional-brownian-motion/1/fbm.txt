@@ -1,0 +1,8 @@
+https://github.com/crflynn/fbm
+https://github.com/732jhy/Fractional-Brownian-Motion
+https://github.com/tuliorr/FractionalBrownianMotion
+https://github.com/dadanhan/hurst-exp
+https://github.com/dadanhan/rlmbm
+https://github.com/gauravag99/fractional-Brownian-Motion
+https://github.com/alecheckert/fbm_sim
+
