@@ -22,7 +22,7 @@ class RenderOptions:
         ):
         self.name = name
         self.color = color
-        self.window_type = 0 #window_type
+        self.window_type = window_type
         self.render_type = render_type
         self.min = min
         self.max = max
