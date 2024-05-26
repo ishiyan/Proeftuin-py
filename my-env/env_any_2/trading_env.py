@@ -161,7 +161,6 @@ class TradingEnv(gym.Env):
         self.start_idx = start_idx
         self.train_range = train_range
         self.test_range =test_range
-        eps_length=253, # one trading year
         self.eps_length = eps_length
         self.window_size = window_size
         self.prices = None
@@ -177,6 +176,7 @@ class TradingEnv(gym.Env):
         self._position = None
         self._position_history = None
         self._total_reward = None
+        self._truncated = None
         #======================================
         self._init_flag = True
     
@@ -196,6 +196,7 @@ class TradingEnv(gym.Env):
             self._reward_space = gym.spaces.Box(-inf, inf, shape=(1, ), dtype=np.float32)
             self._init_flag = False
         self._done = False
+        self._truncated = False
         self._current_tick = self._start_tick
         self._last_trade_tick = self._current_tick - 1
         self._position = Positions.FLAT
@@ -209,16 +210,17 @@ class TradingEnv(gym.Env):
     def random_action(self): # -> Any:
         return np.array([self.action_space.sample()])
 
-    def step(self, action: np.ndarray):
-        assert isinstance(action, np.ndarray), type(action)
+    def step(self, action): #np.ndarray):
+        #assert isinstance(action, np.ndarray), type(action)
         if action.shape == (1, ):
             action = action.item()  # 0-dim array
 
         self._done = False
+        self._truncated = False
         self._current_tick += 1
 
         if self._current_tick >= self._end_tick:
-            self._done = True
+            self._truncated = True
 
         step_reward = self._calculate_reward(action)
         self._total_reward += step_reward

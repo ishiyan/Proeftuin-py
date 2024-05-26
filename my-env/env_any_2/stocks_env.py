@@ -80,7 +80,7 @@ class StocksEnv(TradingEnv):
                 self.start_idx = np.random.randint(self.window_size - 1, len(self.df) - self.eps_length)
             elif self._env_id[-1] == 'e':
                 boundary = int(len(self.df) * (1 + self.test_range))
-                assert len(self.df) - self.eps_length > boundary + self.window_size,\
+                assert len(self.df) - self.eps_length > boundary + self.window_size, \
                  "parameter test_range is too large!"
                 self.start_idx = np.random.randint(boundary + self.window_size, len(self.df) - self.eps_length)
             else:
@@ -88,8 +88,6 @@ class StocksEnv(TradingEnv):
                 assert boundary - self.eps_length > self.window_size,\
                  "parameter test_range is too small!"
                 self.start_idx = np.random.randint(self.window_size, boundary - self.eps_length)
-        #print(self.start_idx)
-        #print(self._start_tick)
         self._start_tick = self.start_idx
         self._end_tick = self._start_tick + self.eps_length - 1
 
