@@ -1,0 +1,202 @@
+#
+# Regular currencies.
+#
+EUR|2|€|Euro (€).
+EUX|0||Euro cent, 1⁄100 of EUR.
+USD|2|$|US dollar ($).
+USX|0|¢|US cent (¢), 1⁄100 of USD.
+GBP|2|£|Pound sterling (£).
+GBX|0|p|Penny sterling (p), ​1⁄100 of a pound, but historically was 1⁄240 of a pound (old penny sterling).
+ZAR|2|R|South African rand (R).
+ZAC|0|c|South African cent (c), 1⁄100 of a rand.
+CHF|2|Fr|Swiss franc (Fr).
+CAD|2|C$|Canadian dollar (C$).
+AUD|2|A$|Australian dollar (A$).
+NZD|2||New Zeeland dollar ($).
+DKK|2|kr|Danish krone (kr).
+SEK|2|kr|Swedish krona (kr).
+NOK|2|kr|Norwegian krone (kr).
+ISK|0|Íkr|Icelandic krona (kr, Íkr).
+#
+CZK|2|Kč|Czech koruna (Kč).
+PLN|2|zł|Poland zloty (zł).
+HUF|2|Ft|Hungary forint (Ft).
+RON|2|leu|Romanian new leu (leu).
+MDL|2|L|Moldovan leu (L, leu).
+RUB|2|₽|Russian rouble (₽).
+UAH|2|₴|Ukraine hryvnia (₴, since 2004).
+BYR|2|Br|Belarusian ruble (Br).
+BGN|2|лв|Bulgarian lev (лв).
+BAM|2|KM|Bosnia and Herzegovina convertible mark (KM).
+HRK|2|kn|Croatian kuna (kn).
+MKD|2|ден|Macedonian denar (den, ден).
+RSD|2|дин|Serbian dinar (din, дин).
+ALL|2|L|Albanian lek (L).
+TRY|2|₺|Turkish new lira (TL, ₺).
+ILS|2|₪|Israeli new sheqel (₪).
+#
+AMD|2|֏|Armenian dram (֏).
+AZN|2|₼|Azerbaijani manat (₼).
+GEL|2|₾|Georgian lari (₾, ლ).
+KGS|2|som|Kyrgyzstani som.
+KZT|2|₸|Kazakhstani tenge (₸).
+TJS|2|SM|Tajikistani somoni (SM).
+TMT|2|T|Turkmenistan manat (T).
+UZS|2|soʻm|Uzbekistani soʻm (soʻm, сум).
+AFN|2|Af|Afghan afghani (Af).
+#
+JPY|0|¥|Japanese yen (¥).
+SGD|2|S$|Singapore dollar (S$).
+HKD|2|HK$|Hong Kong dollar (HK$).
+KPW|2|₩|North Korean won (₩).
+KRW|0|₩|South Korean won (₩).
+MOP|2|MOP$|Macanese pataca (MOP$).
+TWD|2|NT$|Taiwan new dollar (NT$).
+CNY|2|¥|Chinese onshore yuan renminbi (¥) traded within Mainland China only.
+CNH|2|¥|Chinese offshore yuan renminbi (¥) traded outside of Mainland China.
+INR|2|₹|Indian rupee (₨, ₹, ৳, रु).
+NPR|2|रु|Nepalese rupee (रु, ₨).
+PKR|2|₨|Pakistani rupee (₨).
+MYR|2|RM|Malaysian ringgit (RM).
+PHP|2|₱|Philippine peso (₱).
+THB|2|฿|Thai Baht (฿).
+IDR|0|Rp|Indonesian rupiah (Rp).
+LAK|2|₭|Lao kip (₭, ₭N).
+BDT|2|৳|Bangladeshi taka (৳).
+BTN|2|Nu.|Bhutanese ngultrum (Nu.).
+CHR|2|៛|Cambodian riel (៛).
+LKR|2|රු|Sri Lankan rupee (Rs, රු, ரூ).
+MMK|2|K|Myanmar kyat (K).
+VND|0|đ|Vietnamese đồng (đ).
+MNT|2|₮|Mongolian tögrög (₮).
+SRD|2|Sr$|Surinamese dollar (Sr$).
+#
+EGP|2|E£|Egyptian pound (£, E£, ج.م, L.E.).
+SAR|2|SR|Saudi riyal (SR, ر.س).
+AED|2||United Arab Emirates dirham (فلس).
+BHD|3|BD|Bahraini dinar (BD, د.ب).
+IQD|3||Iraqi dinar (د.ع).
+IRR|2||Iranian rial (﷼).
+JOD|3|JD|Jordanian dinar (JD, د.أ).
+KWD|3|KD|Kuwaiti dinar (KD, د.ك).
+LYD|3|LD|Libyan dinar (LD, ل.د).
+MAD|2|DH|Moroccan dirham (DH).
+OMR|3|RO|Omani rial (R.O., ر.ع.).
+QAR|2|QR|Qatari riyal (QR, ر.).
+YER|2||Yemeni rial (ر.ي, ﷼).
+SYP|2|£S|Syrian pound (LS, £S).
+LBP|2||Lebanese pound (ل.ل.‎).
+ETB|2|ብር|Ethiopian birr (Br, ብር).
+TND|2|DT|Tunisian dinar (DT, د.ت).
+#
+ARS|2||Argentine peso ($).
+BRL|2|R$|Brazilian real (R$).
+CLP|0||Chilean peso ($).
+CLF|4|UF|Unidad de Fomento (Chilean funds code, UF).
+MXN|2|Mex$|Mexican peso (Mex$).
+MXV|2||Unidad de Inversion (Mexican funds code, UDI).
+BOB|2|Bs|Bolivian boliviano (Bs).
+COP|2||Colombian peso ($).
+COU|2||Unidad de Valor Real (Colombian funds code, UVR).
+CRC|2|₡|Costa Rican colón (₡).
+CUC|2|CUC$|Cuban convertible peso ($, CUC or CUC$).
+CUP|2|$MN|Cuban peso ($, $MN, or ₱).
+CVE|2|Esc|Cape Verdean escudo ($, Esc).
+DOP|2|RD$|Dominican peso ($, RD$).
+FJD|2|FJ$|Fijian dollar (FJ$).
+FKP|2|FK£|Falkland Islands pound (£, FK£).
+GIP|2||Gibraltar pound (£).
+GTQ|2|Q|Guatemalan quetzal (Q).
+HNL|2|L|Honduran lempira (L).
+HTG|2|G|Haitian gourde (G).
+JMD|2||Jamaican dollar ($).
+KYD|2|CI$|Cayman Islands dollar (CI$).
+LRD|2|L$|Liberian dollar (L$, LD$).
+MGA|2|Ar|Malagasy ariary (Ar).
+NIO|2|C$|Nicaraguan córdoba (C$).
+PAB|2|B/|Panamanian balboa (B/).
+PEN|2|S/|Peruvian sol (S/).
+PGK|2|K|Papua New Guinean kina (K).
+PYG|2|₲|Paraguayan guaraní (₲).
+SBD|2|SI$|Solomon Islands dollar ($, SI$).
+SCR|2|SR|Seychellois rupee (SR).
+SHP|2||Saint Helena pound (£).
+SLL|2|Le|Sierra Leonean leone (Le).
+STN|2|Db|São Tomé and Príncipe dobra (Db).
+SVC|2|₡|Salvadoran colón (₡).
+TOP|2|T$|Tongan paʻanga (T$).
+TTD|2|TT$|Trinidad and Tobago dollar ($, TT$).
+UY1|0||Uruguay Peso en Unidades Indexadas (Funds code, URUIURUI).
+UYU|2|$U|Uruguayan peso ($, $U).
+UYW|4||Unidad previsional, Uruguay.
+VES|2|Bs.S|Venezuelan bolívar (Bs.S, B$).
+VUV|0|VT|Vanuatu vatu (VT).
+WST|0|ST|Samoan tālā ($, SAT, ST, T).
+XCD|2||Eastern Caribbean dollar ($).
+XPF|0|₣|CFP franc (₣).
+ANG|2|NAƒ|Netherlands Antillean guilder (NAƒ, NAf, ƒ, f).
+AWG|2|Afl|Aruban florin (Afl, ƒ.).
+BBD|2|BBD$|Barbadian dollar ($, BBD$).
+BMD|2||Bermudian dollar ($).
+BND|2||Brunei dollar ($, B$).
+BSD|2||Bahamian dollar ($, B$).
+BZD|2||Belize dollar ($).
+#
+AOA|2|Kz|Angolan kwanza (Kz).
+BIF|0|FBu|Burundian franc (FBu).
+BWP|2|P|Botswana pula (P).
+CDF|2|FC|Congolese franc (FC).
+DJF|2|Fdj|Djiboutian franc (Fdj).
+ERN|2|Nkf|Eritrean nakfa (Nkf, ናቕፋ, ناكفا).
+GHS|2|GH₵|Ghanaian cedi (GH₵).
+GMD|2|D|Gambian dalasi (D).
+GNF|2|GFr|Guinean franc (FG, GFr).
+GYD|2|GY$|Guyanese dollar ($, G$, GY$).
+KES|2|KSh|Kenyan shilling (KSh, K).
+KMF|2|CF|Comorian franc (CF).
+LSL|2|M|Lesotho loti (M).
+MRU|2|UM|Mauritanian ouguiya (UM).
+MUR|2|₨|Mauritian rupee (₨).
+MVR|2|MRf|Maldivian rufiyaa (Rf, MRf, .ރ).
+MWK|2|K|Malawian kwacha (K).
+MZN|2|MT|Mozambican metical (MT, MTn).
+NAD|2|N$|Namibian dollar ($, N$).
+NGN|2|₦|Nigerian naira (₦).
+RWF|2|R₣|Rwandan franc (FRw, RF, R₣).
+SDG|2|£SD|Sudanese pound (£SD, ج.س).
+SOS|2|Sh.So|Somali shilling (Sh.So).
+SSP|2|SS£|South Sudanese pound (SS£).
+SZL|2|E|Swazi lilangeni (E).
+TZS|2|TSh|Tanzanian shilling (TSh).
+UGX|2|USh|Ugandan shilling (USh).
+ZMW|2|ZK|Zambian kwacha (K, ZK).
+ZWL|2|Z$|Zimbabwean dollar ($, Z$).
+XOF|2|CFA|West African CFA franc (CFA).
+#
+# The following has no digits specified, but we set it to 5 (1 troy ounce = 31103.5 milligram).
+#
+XAG|5||Silver (one troy ounce).
+XAU|5||Gold (one troy ounce).
+XPD|5||Palladium (one troy ounce).
+XPT|5||Platinum (one troy ounce).
+#
+# The following has no digits specified, but we assume the default of 2.
+#
+XXX|2||No currency. Used to denote a transaction involving no currency.
+XTS|2||Code reserved for testing purposes.
+#
+# Cryptocurrencies.
+#
+BTC|8|₿|Bitcoin (cryptocurrency, ₿).
+BCH|8||Bitcoin Cash (cryptocurrency).
+XLM|8||Stellar Lumen (cryptocurrency).
+XMR|12||Monero (cryptocurrency).
+XRP|6||Ripple (cryptocurrency).
+XTZ|6|ꜩ|Tez (cryptocurrency, ꜩ).
+DSH|8||Dash (cryptocurrency).
+ETH|18||Ethereum (cryptocurrency).
+ETC|18||Ethereum Classic (cryptocurrency).
+LTC|8|Ł|Litecoin (cryptocurrency, Ł).
+VTC|8||Vertcoin (cryptocurrency).
+ZEC|8||Zcash (cryptocurrency).
+EOS|4||EOS.IO (cryptocurrency).
