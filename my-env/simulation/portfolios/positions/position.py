@@ -163,7 +163,6 @@ class PortfolioPosition:
                             (ex.commission_converted_per_unit + e.commission_converted_per_unit)
                         amount_matched += -ex_sign * min_qty * (ex.price - e.price)
                         ex_qty_left -= min_qty
-                        e.unrealized_quantity -= ex_qty_left
                         rts.append(self._new_roundtrip(e, ex, min_qty))
             elif self._roundtrip_matching == RoundtripMatching.LIFO:
                 for e in reversed(self._executions):
@@ -179,7 +178,6 @@ class PortfolioPosition:
                             (ex.commission_converted_per_unit + e.commission_converted_per_unit)
                         amount_matched += -ex_sign * min_qty * (ex.price - e.price)
                         ex_qty_left -= min_qty
-                        e.unrealized_quantity -= ex_qty_left
                         rts.append(self._new_roundtrip(e, ex, min_qty))
         amount_matched *= self._price_factor
         ex.pnl += amount_matched
