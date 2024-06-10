@@ -1,5 +1,6 @@
 from time import time
 from enum import Enum
+from typing import Any
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -101,7 +102,7 @@ class TradingEnv(gym.Env):
         self._first_rendering = None
         self.history = None
 
-    def reset(self, seed=None, options=None):
+    def reset(self, seed: int | None = None, options: dict[str, Any] | None = None) -> tuple[np.array, dict[str, Any]]:
         super().reset(seed=seed, options=options)
         self.action_space.seed(int((self.np_random.uniform(0, seed if seed is not None else 1))))
 
@@ -135,10 +136,8 @@ class TradingEnv(gym.Env):
 
         self._update_profit(action)
 
-        if (
-            (action == Actions.Buy.value and self._position == Positions.Short) or
-            (action == Actions.Sell.value and self._position == Positions.Long)
-        ):
+        if ((action == Actions.Buy.value and self._position == Positions.Short) or
+            (action == Actions.Sell.value and self._position == Positions.Long)):
             self._position = self._position.opposite()
             self._last_trade_tick = self._current_tick
 

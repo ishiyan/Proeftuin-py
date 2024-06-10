@@ -1,54 +1,77 @@
-# Copyright 2020 The TensorTrade Authors.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License
-
-from abc import abstractmethod, ABCMeta
+from abc import ABC, abstractmethod
+from enum import Enum
 from typing import Any
 
-from gym.spaces import Space
+import gymnasium as gym
+import numpy as np
 
-
-from tensortrade.core.component import Component
-from tensortrade.core.base import TimeIndexed
-
-
-class ActionScheme(Component, TimeIndexed, metaclass=ABCMeta):
-    """A component for determining the action to take at each step of an
-    episode.
-    """
-
-    registered_name = "actions"
+class ActionScheme(ABC):
+    """Determines the action to take at each step of an episode."""
 
     @property
     @abstractmethod
-    def action_space(self) -> Space:
-        """The action space of the `TradingEnv`. (`Space`, read-only)
-        """
+    def action_space(self) -> gym.spaces.Space:
+        """The action space of the environment. (`Space`, read-only)"""
         raise NotImplementedError()
 
     @abstractmethod
-    def perform(self, env: 'TradingEnv', action: Any) -> None:
-        """Performs an action on the environment.
-
-        Parameters
-        ----------
-        env : `TradingEnv`
-            The trading environment to perform the `action` on.
-        action : Any
-            The action to perform on `env`.
-        """
+    def perform(self, action: Any, truncated: bool, price: float) -> None:
+        """Performs an action on the environment."""
         raise NotImplementedError()
 
+    @abstractmethod
     def reset(self) -> None:
         """Resets the action scheme."""
-        pass
+        raise NotImplementedError()
+
+# --------------------------------------------------
+
+class Actions(Enum):
+    Sell = 0
+    Buy = 1
+
+class Positions(Enum):
+    Short = 0
+    Long = 1
+
+    def opposite(self):
+        return Positions.Short if self == Positions.Long else Positions.Long
+
+class Any1ActionScheme(ActionScheme):
+
+    def __init__(self) -> None:
+        self.trade_fee_bid_percent = 0.01  # unit
+        self.trade_fee_ask_percent = 0.005  # unit
+        self.action_space = gym.spaces.Discrete(len(Actions))
+
+        self._position = None
+        self._position_history = None
+        self._total_reward = None
+        self._total_profit = None
+        self._last_trade_price = None
+        self._current_price = None
+
+    def perform(self, action: Any, truncated: bool, price: float) -> None:
+        trade = True if \
+            ((action == Actions.Buy.value and self._position == Positions.Short) or \
+            (action == Actions.Sell.value and self._position == Positions.Long)) \
+            else False
+        if trade or truncated:
+            if self._position == Positions.Long:
+                shares = (self._total_profit * (1 - self.trade_fee_ask_percent)) / self.last_trade_price
+                self._total_profit = (shares * (1 - self.trade_fee_bid_percent)) * price
+        if trade:
+            self._position = self._position.opposite()
+            self._last_trade_price = price
+        self._current_price = price
+        self._position_history.append(self._position)
+
+    def reset(self) -> None:
+        #self.portfolio.reset()
+        #self.broker.reset()
+        self._position = Positions.Short
+        self._position_history = (self.window_size * [None]) + [self._position]
+        self._total_reward = 0.
+        self._total_profit = 1.  # unit
+        self._first_rendering = True
+        self.history = {}
