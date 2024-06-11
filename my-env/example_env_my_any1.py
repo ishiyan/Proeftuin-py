@@ -1,9 +1,7 @@
-import numpy as np
 import pandas as pd
-import gymnasium as gym
 import matplotlib.pyplot as plt
 
-from env_my import MbraneEnv, Actions, Positions 
+from env_my import Any1Env
 
 def read_adjusted_history_ohlcv(path_csv):
     history = pd.read_csv(path_csv, parse_dates=["Date"], index_col='Date', \
@@ -30,8 +28,8 @@ price_history["f_volume"] = price_history["volume"] / price_history["volume"].ro
 price_history.dropna(inplace= True)
 #price_history
 
-env = MbraneEnv(df=price_history, frame_bound=(50, 303), window_size=10) #, render_mode='human')
-#env = gym.make('MbranEnv-v0', df=price_history, frame_bound=(50, 303), window_size=10)
+env = Any1Env(df=price_history, frame_bound=(50, 303), window_size=10)#, render_mode='human')
+#env = gym.make('Any1Env-v0', df=price_history, frame_bound=(50, 303), window_size=10)
 
 observation = env.reset(seed=None)
 while True:
