@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Optional
 from numbers import Real
 
 from ..accounts.account import Account
@@ -9,7 +10,9 @@ from ..frame import Frame
 class Renderer(ABC):
 
     @abstractmethod
-    def reset(self, episode_number: int, account: Account, provider: Provider, processor: Processor, frame: Frame):
+    def reset(self, episode_number: int, episode_max_steps: Optional[int],
+            account: Account, provider: Provider, processor: Processor,
+            frame: Frame):
         raise NotImplementedError()
 
     @abstractmethod
@@ -22,9 +25,5 @@ class Renderer(ABC):
 
     @abstractmethod
     def close(self):
-        raise NotImplementedError()
-
-    @abstractmethod
-    def save_rendering(self, filepath):
         raise NotImplementedError()
     

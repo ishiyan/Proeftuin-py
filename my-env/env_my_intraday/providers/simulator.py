@@ -215,7 +215,8 @@ class Simulator(Provider):
         prices_above = sorted_prices[target_index:]
         n_below, n_above = len(prices_below), len(prices_above)
         if (n_below == 0) or (n_above == 0):
-            warnings.warn('Target price is outside of the given prices range!', source=Simulator._target_coefficients)
+            #warnings.warn(f'Target price is outside of the given prices range! n_below={n_below}, n_above={n_above}', source=Simulator._target_coefficients)
+            pass
         else:
             mean_below, mean_above = prices_below.mean(), prices_above.mean()
             k_below = (mean_above - target) / (mean_above - mean_below)

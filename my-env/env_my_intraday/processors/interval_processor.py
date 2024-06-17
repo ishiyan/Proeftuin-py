@@ -10,7 +10,21 @@ from ..frame import Frame
 from .processor import Processor
 
 class IntervalProcessor(Processor):
-    
+    '''
+    Groups trades into frames based on specified interval and methodology.
+
+    Parameters:
+    - method: str
+        Method of how to group the flow of records into frames.
+        Possible values: 'time', 'tick', 'volume', 'money'.
+    - interval: int
+        Initial_threshold of the frame in seconds.
+        It is used to group trades into frames.
+    - duration: tuple
+        Tuple with two values: (min_duration, max_duration).
+        If frame duration exceeds max_duration, it will be finalized.
+        If frame duration exceeds min_duration and frame is full, it will be finalized.
+    '''
     FramingMethods = [
         'time',
         'tick',

@@ -37,7 +37,7 @@ class BinanceMonthlyKlines1mToTradesProvider(Simulator):
     This can be important information (or not).
     
     To see how trades are emulated from kline, preserving information about VWAP,
-    look `intraday.Simulator` class.
+    look into the `Simulator` class.
 
     Parameters
     ----------
@@ -55,10 +55,6 @@ class BinanceMonthlyKlines1mToTradesProvider(Simulator):
         Specify ending date to load archives.
         If None - uses the current date.
         Default: None
-    
-    See Also
-    --------
-    intraday.simulator.Simulator
     """
     duration = 60
     

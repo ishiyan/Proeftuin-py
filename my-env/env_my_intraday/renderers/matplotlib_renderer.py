@@ -35,14 +35,10 @@ BROWNY_LIGHT = {
     'title': 'black', 'alert': 'tab:red'}
 
 class MatplotlibRenderer(Renderer):
-    metadata = {'render_modes': ['human', 'rgb_array'], 'render_fps': 3}
 
     def __init__(self,
         dpi=120, # 96, 120
-        colors = GREENS_DARK,
-        render_mode: Optional[str] = None):
-        assert render_mode is None or render_mode in self.metadata['render_modes']
-        self.render_mode = render_mode
+        colors = GREENS_DARK):
         self.dpi = dpi # DPI to render the figure
         self.colors = colors
 
@@ -50,6 +46,7 @@ class MatplotlibRenderer(Renderer):
         self.provider: Provider = None
         self.processor: Processor = None
         self.episode = None
+        self.episode_max_steps = None
         self.episode_number = None
         self.current_step = None
         self.current_position = None
@@ -65,12 +62,15 @@ class MatplotlibRenderer(Renderer):
             'twr', 'sharpe', 'sortino', 'calmar', 'reward', 'total reward',]
         self.df = None
 
-    def reset(self, episode_number: int, account: Account, provider: Provider, processor: Processor, frame: Frame):
+    def reset(self, episode_number: int, episode_max_steps: Optional[int],
+            account: Account, provider: Provider, processor: Processor,
+            frame: Frame):
         self.account = account
         self.provider = provider
         self.processor = processor
 
         self.episode = f'{provider.name} {processor.name}'
+        self.episode_max_steps = episode_max_steps
         self.episode_number = episode_number
         self.current_step = 0
         self.current_position = 0.0
@@ -79,8 +79,26 @@ class MatplotlibRenderer(Renderer):
         self.initial_balance = self.account.initial_balance
         self.total_reward = 0.0
 
-        plt.close()
-        fig = plt.figure(dpi=self.dpi, layout='constrained')
+        if self.figure is not None:
+            plt.close(self.figure)
+
+        def determine_figsize(episode_max_steps):
+            if episode_max_steps is None:
+                return (6.4, 4.8)
+            elif episode_max_steps < 128:
+                return (6.4, 4.8)
+            elif episode_max_steps < 196:
+                return (8.0, 4.8)
+            elif episode_max_steps < 256:
+                return (9.6, 4.8)
+            elif episode_max_steps < 312:
+                return (11.2, 4.8)
+            else:
+                return (12.8, 4.8)
+            
+        fig = plt.figure(dpi = self.dpi, layout='constrained',
+            figsize=determine_figsize(episode_max_steps))
+
         gs = fig.add_gridspec(5, 2)
         ax1 = fig.add_subplot(gs[:3, :])
         ax2_1 = fig.add_subplot(gs[3, 0])
@@ -99,6 +117,7 @@ class MatplotlibRenderer(Renderer):
             ax.grid(color=self.colors['text'])
 
         self.df = pd.DataFrame(columns = self.df_columns)
+        #self.df = pd.DataFrame({col: [None]*self.episode_max_steps for col in self.df_columns})
         self._append_step(frame, 0)
 
     def step(self, frame: Frame, reward: Real):
@@ -122,10 +141,8 @@ class MatplotlibRenderer(Renderer):
         return self._figure_to_rgb_array(self.figure)
         
     def close(self):
-        plt.close()
-
-    def save_rendering(self, filepath):
-        plt.savefig(filepath)
+        if self.figure is not None:
+            plt.close(self.figure)
 
     def _append_step(self, frame: Frame, reward: Real):
         self.total_reward += reward
@@ -154,10 +171,12 @@ class MatplotlibRenderer(Renderer):
 
         assert set(row.keys()) == set(self.df_columns)
         assert len(row) == len(self.df_columns)        
+        #self.df.loc[self.current_step] = row
 
         # If you want to change index to datetime, use the second line below.
         self.df.loc[len(self.df)] = row # Only use with a RangeIndex!
         #pd.concat([self.df, pd.DataFrame(data=row, columns=self.df_columns)], ignore_index=True)
+
 
     def _plot_title(self, ax):
         row = self.df.iloc[-1]

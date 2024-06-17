@@ -81,10 +81,15 @@ class Environment(Broker, gym.Env):
         multiplied by `idle_penalty` parameter. This should stimulate
         agent to perform some actions and not just hold its initial balance.
         Default: 0.01
-    warm_up_time : Optional[Union[Real, timedelta]]
+    warm_up_duration : Optional[Union[Real, timedelta]]
         Many features require some time (some frames) to start output a reasonable
-        values. You may specify the number of seconds or timedelta object to.
+        values. You may specify the number of seconds or a timedelta object.
         Default: 10*60 (ten minutes)
+    max_episode_duration : Optional[Union[Real, timedelta]]
+        The maximum duration of an episode.
+        You may specify the number of seconds or a timedelta object.
+        For instance, 2*60*60 or timedelta(hours = 2).
+        Default: 2*60*60 (two hours)
     delay_per_second : Optional[float]
         You may optionally specify the desired delay to limit CPU usage.
         It is a part of a second [0.0 ... 1.0) when process will go to sleep.
@@ -128,16 +133,23 @@ class Environment(Broker, gym.Env):
         order_luck: float = 0.10,
         commission: Union[Real, Callable[[str, Real, Real], Real]] = 20,
         idle_penalty: Optional[float] = 0.01,
-        warm_up_time: Optional[Union[Real, timedelta]] = 10*60,
+        warm_up_duration: Optional[Union[Real, timedelta]] = 10*60,
+        episode_max_duration: Optional[Union[Real, timedelta]] = None,#2*60*60,#ADD TO DOCSTRING use it ocasionally
+        episode_max_steps: Optional[int] = 512,#ADD TO DOCSTRING this is the primary stopping condition
         delay_per_second: Optional[float] = None,
         instant_balance_update = False,
         max_frames_period = 100,
         max_trades_period = 1000,
-        render_mode = None,
+        render_mode: Optional[str] = None,
         log: Optional[logging.Logger] = None,
         **kwargs):
-        assert render_mode is None or render_mode in self.metadata['render_modes']
-
+        # Initialize the renderer
+        if render_mode is not None and \
+            render_mode not in self.metadata['render_modes']:
+            raise ValueError(f'Invalid render_mode. It must be one '
+                             f'of the following: {self.metadata["render_modes"]}')
+        self.render_mode: str = render_mode
+        self.renderer = MatplotlibRenderer()
 
         # Initial balance to start trading in new episode
         assert isinstance(initial_balance, Real) and (initial_balance > 0)
@@ -147,16 +159,43 @@ class Environment(Broker, gym.Env):
         assert (idle_penalty is None) or isinstance(idle_penalty, float)
         self.idle_penalty = idle_penalty
         
-        if warm_up_time is None:
-            warm_up_time = timedelta(seconds=0.0)
-        elif isinstance(warm_up_time, Real):
-            warm_up_time = timedelta(seconds=float(warm_up_time))
-        elif isinstance(warm_up_time, timedelta):
+        if warm_up_duration is None:
+            warm_up_duration = timedelta(seconds=0.0)
+        elif isinstance(warm_up_duration, Real):
+            warm_up_duration = timedelta(seconds=float(warm_up_duration))
+        elif isinstance(warm_up_duration, timedelta):
             pass
         else:
-            raise ValueError('Invalid warm_up_time value')
-        assert warm_up_time.total_seconds() >= 0
-        self.warm_up_time: timedelta = warm_up_time
+            raise ValueError('Invalid warm_up_duration value')
+        assert warm_up_duration.total_seconds() >= 0
+        self.warm_up_duration: timedelta = warm_up_duration
+
+        # Maximum duration of an episode        
+        if episode_max_duration is None:
+            pass
+        else:
+            if isinstance(episode_max_duration, Real):
+                episode_max_duration = timedelta(seconds=float(episode_max_duration))
+            elif isinstance(episode_max_duration, timedelta):
+                pass
+            else:
+                raise ValueError(f'Invalid episode_max_duration value: '
+                    f'{episode_max_duration} of type {type(episode_max_duration)}')
+            if episode_max_duration.total_seconds() <= 0:
+                raise ValueError(f'episode_max_duration seconds '
+                    f'{episode_max_duration} must be positive')
+        self.episode_max_duration: Optional[timedelta] = episode_max_duration
+
+        # Maximum number of steps in an episode
+        if episode_max_steps is None:
+            pass
+        elif isinstance(episode_max_steps, int):
+            if episode_max_steps <= 0:
+                raise ValueError(f'episode_max_steps {episode_max_steps} must be positive')
+        else:
+            raise ValueError(f'Invalid episode_max_steps value: {episode_max_steps} '
+                             f'of type {type(episode_max_steps)}')
+        self.episode_max_steps: Optional[int] = episode_max_steps
 
         # Setup delay to reduce CPU usage during reset()
         assert ((delay_per_second is None) or
@@ -263,17 +302,14 @@ class Environment(Broker, gym.Env):
         self.action_space: gym.spaces.Space = action_scheme.space
 
         # Episode variables
+        self.step_number: int = 0
         self.episode_number: int = 0
         self.episode_start_datetime: Optional[Union[Arrow, datetime]] = None
-        self.episode_max_duration: Optional[timedelta] = None
         self.span_start_time: Optional[Union[Arrow, datetime]] = None
         self.trades: List[Trade] = []
         self.frames: List[Frame] = []
         self.state: Optional[OrderedDict] = None
         self.rng: Optional[np.random.RandomState] = None
-
-        #IVAN
-        self.renderer: Optional[Renderer] = MatplotlibRenderer(render_mode = 'human')
 
     def reset(self, seed: int | None = None, options: dict[str, Any] | None = None) -> tuple[np.array, dict[str, Any]]:
         # This should also reset Broker class, which is also a parent class
@@ -282,6 +318,7 @@ class Environment(Broker, gym.Env):
         self.action_space.seed(int((self.np_random.uniform(0, seed if seed is not None else 1))))
 
         self.episode_number += 1
+        self.step_number = 0
         self.processor.reset()
         self.action_scheme.reset()
         self.reward_scheme.reset()
@@ -290,7 +327,6 @@ class Environment(Broker, gym.Env):
 
         # Reset episode variables
         self.episode_start_datetime = None
-        self.episode_max_duration = None
         self.span_start_time = None
         self.trades.clear()
         self.frames.clear()
@@ -307,9 +343,8 @@ class Environment(Broker, gym.Env):
         self.episode_start_datetime = self.provider.reset(
             episode_start_datetime = None,
             episode_min_duration = None,
-            rng = self.rng) + self.warm_up_time
-        self.episode_max_duration = timedelta(hours = 2)
-        
+            rng = self.rng) + self.warm_up_duration
+
         # Important: we should make random initial action,
         # otherwise policy will tend to perform no orders at all!
         action = self.action_scheme.get_random_action()
@@ -326,8 +361,11 @@ class Environment(Broker, gym.Env):
 
         state = self._make_state()
 
-        #IVAN
-        self.renderer.reset(episode_number=self.episode_number, account = self.account, provider = self.provider, processor = self.processor, frame = frame)
+        if self.renderer is not None:
+            self.renderer.reset(episode_number = self.episode_number,
+                                episode_max_steps = self.episode_max_steps,
+                                account = self.account, provider = self.provider,
+                                processor = self.processor, frame = frame)
         return state, frame
 
     def step(self, action: Any) -> Tuple[Union[OrderedDict, None], float, bool, bool, Union[Frame, None]]:
@@ -353,9 +391,13 @@ class Environment(Broker, gym.Env):
                 self.account.balance -= penalty
                     
         # Check for episode completion
-        if (not truncated) and (self.episode_max_duration is not None) and (frame.time_end is not None):
+        self.step_number += 1
+        if (not truncated) and (self.episode_max_steps is not None):
+            truncated = self.step_number >= self.episode_max_steps
+        if (not truncated) and (self.episode_max_duration is not None) \
+            and (frame.time_end is not None):
             episode_duration = (frame.time_end - self.episode_start_datetime)
-            truncated = (episode_duration >= self.episode_max_duration)
+            truncated = episode_duration >= self.episode_max_duration
 
         if truncated:
             # Close agent position if done
@@ -378,8 +420,9 @@ class Environment(Broker, gym.Env):
         reward = self.reward_scheme.get_reward(env = self, account = self.account)
         terminated = self.account.is_halted or self.account.balance <= 0            
 
-        #IVAN
-        self.renderer.step(frame = frame, reward = reward)
+        if self.renderer is not None:
+            self.renderer.step(frame = frame, reward = reward)
+
         return state, reward, terminated, truncated, frame
 
     def _get_next_frame(self) -> Tuple[Union[Frame, None], bool]:
@@ -393,7 +436,7 @@ class Environment(Broker, gym.Env):
                 # Process trade to update statistics and execute orders
                 self.process_trade(trade)
                 # Check if this trade belongs to the time period of our interest
-                if trade.datetime >= self.episode_start_datetime - self.warm_up_time:
+                if trade.datetime >= self.episode_start_datetime - self.warm_up_duration:
                     # Add trade to the list of trades
                     self.trades.append(trade)
                     # Remove old trade
@@ -458,12 +501,12 @@ class Environment(Broker, gym.Env):
         self.reward_scheme.reset()
         # Reset episode variables
         self.episode_start_datetime = None
-        self.episode_max_duration = None
+        #self.episode_max_duration = None
         self.span_start_time = None
         self.trades.clear()
         self.frames.clear()
-        #IVAN
-        self.renderer.close()
+        if self.renderer is not None:
+            self.renderer.close()
 
-    def render(self, mode='human'):
-        return self.renderer.render()
+    def render(self, mode: Optional[str]) -> Optional[Union[str, np.array]]:
+        return self.renderer.render() if self.renderer is not None else None
