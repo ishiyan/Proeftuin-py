@@ -385,11 +385,9 @@ class Frame(object):
         return self
         
     def __repr__(self):
-        return (
-            f'{self.__class__.__name__}(' +
+        return (f'{self.__class__.__name__}(' +
             ','.join([f'{str(k)}={str(v)}' for k, v in self.__dict__.items()]) +
-            ')'
-        )
+            ')')
 
 def _diff(v1, v2):
     return (v1 - v2) if (v1 is not None) and (v2 is not None) else 0.0

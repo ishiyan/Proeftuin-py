@@ -3,9 +3,9 @@ from typing import Sequence, Optional
 from ..providers import Trade
 from ..frame import Frame
 
-class Processor(object):
+class TradeAggregator(object):
     """
-    Base abstract class for IntervalProcessor, ImbalanceProcessor and RunProcessor
+    Base abstract class for IntervalTradeAggregator, ImbalanceTradeAggregator and RunTradeAggregator
     """
     def __init__(self, **kwargs):
         pass
@@ -13,7 +13,7 @@ class Processor(object):
     def reset(self):
         raise NotImplementedError()
 
-    def process(self, trades: Sequence[Trade]) -> Optional[Frame]:
+    def aggregate(self, trades: Sequence[Trade]) -> Optional[Frame]:
         raise NotImplementedError()
     
     def finish(self) -> Optional[Frame]:

@@ -1,20 +1,20 @@
-from typing import Tuple, Literal, Sequence, Optional
+from typing import Tuple, Literal, Sequence
 from numbers import Real
 
 from ..providers import Trade
 from ..frame import Frame
-from .processor import Processor
+from .trade_aggregator import TradeAggregator
 
-class ImbalanceProcessor(Processor):
+class RunTradeAggregator(TradeAggregator):
     
     FramingMethods = {
-        'ti': 'tick-imbalance',
-        'vi': 'volume-imbalance',
-        'mi': 'money-imbalance',
+        'tr': 'tick-runs',
+        'vr': 'volume-runs',
+        'mr': 'money-runs',
     }
     
     def __init__(self,
-                 method: Literal['ti', 'vi', 'mi'],
+                 method: Literal['tr', 'vr', 'mr'],
                  initial_threshold: Real,
                  ema_period_frames: int = 200,
                  ema_period_trades: int = 1000,
@@ -23,7 +23,7 @@ class ImbalanceProcessor(Processor):
         super().__init__(**kwargs)
         # Method of how to group the flow of records into frames
         # Frame initial_threshold which depends on selected method
-        assert isinstance(method, str) and (method in ImbalanceProcessor.FramingMethods)
+        assert isinstance(method, str) and (method in RunTradeAggregator.FramingMethods)
         assert isinstance(initial_threshold, int) and (initial_threshold > 0)
         assert isinstance(ema_period_frames, int) and (ema_period_frames > 0)
         assert isinstance(ema_period_trades, int) and (ema_period_trades > 0)
@@ -36,7 +36,7 @@ class ImbalanceProcessor(Processor):
         self.ema_period_frames = ema_period_frames
         self.ema_period_trades = ema_period_trades
         self.duration = duration
-
+        
         # Initialize episode variables
         self.frame = None
         self.n_trades = 0
@@ -49,10 +49,11 @@ class ImbalanceProcessor(Processor):
         self.avg_trade_sell_amount = None
         self.avg_trade_sell_money = None
         self.avg_frame_ticks = None
+        
         # These will hold threshold values
-        self.threshold_imbalance_ticks = None
-        self.threshold_imbalance_volume = None
-        self.threshold_imbalance_money = None
+        self.threshold_run_ticks = None
+        self.threshold_run_volume = None
+        self.threshold_run_money = None
 
     @property
     def name(self):
@@ -68,11 +69,11 @@ class ImbalanceProcessor(Processor):
         self.avg_trade_sell_amount = None
         self.avg_trade_sell_money = None
         self.avg_frame_ticks = None
-        self.threshold_imbalance_ticks = None
-        self.threshold_imbalance_volume = None
-        self.threshold_imbalance_money = None
-
-    def process(self, trades: Sequence[Trade]) -> Optional[Frame]:
+        self.threshold_run_ticks = None
+        self.threshold_run_volume = None
+        self.threshold_run_money = None
+    
+    def aggregate(self, trades: Sequence[Trade]) -> Tuple[Frame, None]:
         result = None
         trade = trades[-1]
         frame = self.frame
@@ -96,36 +97,36 @@ class ImbalanceProcessor(Processor):
         else:
             self._update_average_value('avg_trade_sell_amount', amount, self.n_trades, self.ema_period_trades)
             self._update_average_value('avg_trade_sell_money', money, self.n_trades, self.ema_period_trades)
-            
+        
         # Check for the end of frame
         if (
-            (frame.duration >= self.duration[0]) and (
+            ((frame.duration >= self.duration[0]) and (
                 ((self.n_frames <= 0) and (
-                    ((self.method == 'ti') and (frame.ticks >= self.initial_threshold)) or
-                    ((self.method == 'ti') and (frame.volume >= self.initial_threshold)) or
-                    ((self.method == 'ti') and (frame.money >= self.initial_threshold))
+                    ((self.method == 'tr') and (max(frame.buy_ticks, frame.sell_ticks) >= self.initial_threshold)) or
+                    ((self.method == 'vr') and (max(frame.buy_volume, frame.sell_volume) >= self.initial_threshold)) or
+                    ((self.method == 'mr') and (max(frame.buy_money, frame.sell_money) >= self.initial_threshold))
                 )) or
                 ((self.n_frames > 0) and (
-                    ((self.method == 'ti') and (abs(frame.imbalance_ticks) >= self.threshold_imbalance_ticks)) or
-                    ((self.method == 'vi') and (abs(frame.imbalance_volume) >= self.threshold_imbalance_volume)) or
-                    ((self.method == 'mi') and (abs(frame.imbalance_money) >= self.threshold_imbalance_money))
+                    ((self.method == 'tr') and (max(frame.buy_ticks, frame.sell_ticks) >= self.threshold_run_ticks)) or
+                    ((self.method == 'vr') and (
+                        max(frame.buy_volume, frame.sell_volume) >= self.threshold_run_volume)) or
+                    ((self.method == 'mr') and (max(frame.buy_money, frame.sell_money) >= self.threshold_run_money))
                 ))
-            ) or
+            )
+        ) or
             (frame.duration >= self.duration[1])
         ):
             # Reset current frame
             result = frame.finalize()
             self._process_frame(frame)
             self.frame = Frame()
-
+            
         # Update number of processed trades
         self.n_trades += 1
-
+        
         return result
-
-    def finish(self) -> Optional[Frame]:
-        if self.frame is None:
-            return None
+    
+    def finish(self) -> Tuple[Frame, None]:
         result = self.frame.finalize()
         if result is not None:
             self._process_frame(result)
@@ -133,23 +134,25 @@ class ImbalanceProcessor(Processor):
         return result
 
     def _process_frame(self, frame: Frame):
-        # Update average number of ticks in frame
+        # Update average values
         self._update_average_value('avg_frame_ticks', frame.ticks, self.n_frames, self.ema_period_frames)
         
         # Calculate buy and sell probability
         Pbuy = (self.avg_trade_tick + 1.0) / 2.0
         Psell = (1.0 - Pbuy)
-
-        # Calculate imbalance thresholds for the next frame
-        self.threshold_imbalance_ticks = self.avg_frame_ticks * abs(self.avg_trade_tick or 0)
-        self.threshold_imbalance_volume = (self.avg_frame_ticks *
-            abs(Pbuy * (self.avg_trade_buy_amount or 0) - Psell * (self.avg_trade_sell_amount or 0)))
-        self.threshold_imbalance_money = (self.avg_frame_ticks *
-            abs(Pbuy * (self.avg_trade_buy_money or 0) - Psell * (self.avg_trade_sell_money or 0)))
+        
+        # Calculate run thresholds for the next frame
+        self.threshold_run_ticks = self.avg_frame_ticks * max(Pbuy, Psell)
+        self.threshold_run_volume = (self.avg_frame_ticks *
+                                     max(Pbuy * (self.avg_trade_buy_amount or 0),
+                                         Psell * (self.avg_trade_sell_amount or 0)))
+        self.threshold_run_money = (self.avg_frame_ticks *
+                                    max(Pbuy * (self.avg_trade_buy_money or 0),
+                                        Psell * (self.avg_trade_sell_money or 0)))
         
         # Update number of processed frames
         self.n_frames += 1
-
+    
     def _update_average_value(self, name: str, new_value, n_iter: int, period: int):
         if new_value is None:
             return

@@ -4,14 +4,14 @@ from numbers import Real
 
 from ..accounts.account import Account
 from ..providers.provider import Provider
-from ..processors.processor import Processor
+from ..aggregators.trade_aggregator import TradeAggregator
 from ..frame import Frame 
 
 class Renderer(ABC):
 
     @abstractmethod
     def reset(self, episode_number: int, episode_max_steps: Optional[int],
-            account: Account, provider: Provider, processor: Processor,
+            account: Account, provider: Provider, aggregator: TradeAggregator,
             frame: Frame):
         raise NotImplementedError()
 

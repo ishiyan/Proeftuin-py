@@ -10,7 +10,7 @@ import pandas as pd
 
 from ..accounts.account import Account
 from ..providers.provider import Provider
-from ..processors.processor import Processor
+from ..aggregators.trade_aggregator import TradeAggregator
 from ..frame import Frame 
 from .renderer import Renderer
 
@@ -44,7 +44,7 @@ class MatplotlibRenderer(Renderer):
 
         self.account: Account = None
         self.provider: Provider = None
-        self.processor: Processor = None
+        self.aggregator: TradeAggregator = None
         self.episode = None
         self.episode_max_steps = None
         self.episode_number = None
@@ -63,13 +63,13 @@ class MatplotlibRenderer(Renderer):
         self.df = None
 
     def reset(self, episode_number: int, episode_max_steps: Optional[int],
-            account: Account, provider: Provider, processor: Processor,
+            account: Account, provider: Provider, aggregator: TradeAggregator,
             frame: Frame):
         self.account = account
         self.provider = provider
-        self.processor = processor
+        self.aggregator = aggregator
 
-        self.episode = f'{provider.name} {processor.name}'
+        self.episode = f'{provider.name} {aggregator.name}'
         self.episode_max_steps = episode_max_steps
         self.episode_number = episode_number
         self.current_step = 0

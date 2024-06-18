@@ -2,8 +2,7 @@ from typing import Any, Callable, List, Literal, MutableSequence, Optional, Sequ
 from collections import OrderedDict
 from numbers import Real
 from time import sleep
-from datetime import datetime, timedelta
-from arrow import Arrow
+from datetime import datetime, timedelta, timezone
 import logging
 import copy
 
@@ -12,7 +11,7 @@ import gymnasium as gym
 
 from .frame import Frame 
 from .providers import Provider, Trade
-from .processors import Processor
+from .aggregators import TradeAggregator
 from .actions import ActionScheme
 from .rewards import RewardScheme
 from .features import Feature, TradesFeature
@@ -28,8 +27,8 @@ class Environment(Broker, gym.Env):
     ----------
     provider : Union[Provider, Sequence[Provider]]
         An instance of provider data source, or a list of such providers.
-    processor : Processor
-        An instance of processor object, which is responsible for dividing
+    aggregator : TradeAggregator
+        An instance of aggregator object, which is responsible for dividing
         a sequence of trades into frames.
     action_scheme : ActionScheme
         Action scheme to be used by all agents.
@@ -121,7 +120,7 @@ class Environment(Broker, gym.Env):
 
     def __init__(self,
         provider: Union[Provider, Sequence[Provider]],
-        processor: Processor,
+        aggregator: TradeAggregator,
         action_scheme: ActionScheme,
         reward_scheme: RewardScheme,
         features_pipeline: Optional[Sequence[Feature]] = None,
@@ -239,9 +238,9 @@ class Environment(Broker, gym.Env):
             assert all([isinstance(p, Provider) for p in provider]), 'Some of objects are not providers!'
             self.providers = provider
         else:
-            raise ValueError('Invalid provider argument')
+            raise ValueError(f'Invalid provider {provider}')
         self.provider: Optional[Provider] = None
-        self.processor = processor
+        self.aggregator = aggregator
         self.action_scheme = action_scheme
         self.reward_scheme = reward_scheme
         self.features_pipeline = features_pipeline
@@ -304,8 +303,8 @@ class Environment(Broker, gym.Env):
         # Episode variables
         self.step_number: int = 0
         self.episode_number: int = 0
-        self.episode_start_datetime: Optional[Union[Arrow, datetime]] = None
-        self.span_start_time: Optional[Union[Arrow, datetime]] = None
+        self.episode_start_datetime: Optional[datetime] = None
+        self.span_start_time: Optional[datetime] = None
         self.trades: List[Trade] = []
         self.frames: List[Frame] = []
         self.state: Optional[OrderedDict] = None
@@ -319,7 +318,7 @@ class Environment(Broker, gym.Env):
 
         self.episode_number += 1
         self.step_number = 0
-        self.processor.reset()
+        self.aggregator.reset()
         self.action_scheme.reset()
         self.reward_scheme.reset()
         for feature in self.features_pipeline:
@@ -348,11 +347,11 @@ class Environment(Broker, gym.Env):
         # Important: we should make random initial action,
         # otherwise policy will tend to perform no orders at all!
         action = self.action_scheme.get_random_action()
-        self.action_scheme.process_action(broker = self,
+        self.action_scheme.process_action(broker = self, #IVAN ???????
             account = self.account, action = action, time = self.episode_start_datetime)
 
         # Reset span time
-        self.span_start_time = Arrow.now()
+        self.span_start_time = datetime.now(timezone.utc)
 
         # Read first frame
         frame, done = self._get_next_frame()
@@ -365,7 +364,7 @@ class Environment(Broker, gym.Env):
             self.renderer.reset(episode_number = self.episode_number,
                                 episode_max_steps = self.episode_max_steps,
                                 account = self.account, provider = self.provider,
-                                processor = self.processor, frame = frame)
+                                aggregator = self.aggregator, frame = frame)
         return state, frame
 
     def step(self, action: Any) -> Tuple[Union[OrderedDict, None], float, bool, bool, Union[Frame, None]]:
@@ -443,18 +442,18 @@ class Environment(Broker, gym.Env):
                     if len(self.trades) > self.max_trades_period + 1:
                         del self.trades[0]
                     # Process trade to construct a frame
-                    frame = self.processor.process(self.trades)
+                    frame = self.aggregator.aggregate(self.trades)
                     # Update features which require each trade
                     for feature in self.trades_features:
                         feature.update(self.trades)
                 # Perform delay if needed
                 if self.delay_per_second is not None:
                     # Calculate how much time have passed
-                    span_duration = float((Arrow.now() - self.span_start_time).microseconds)
+                    span_duration = float((datetime.now(timezone.utc) - self.span_start_time).microseconds)
                     if span_duration >= 1000000.0 * (1.0 - self.delay_per_second):
                         sleep(self.delay_per_second)
                         # Reset span timer
-                        self.span_start_time = Arrow.now()
+                        self.span_start_time = datetime.now(timezone.utc)
                 if frame is not None:
                     self._process_frame(frame)
                     # Return next frame, if its time >= episode_start_datetime
@@ -462,8 +461,8 @@ class Environment(Broker, gym.Env):
                         break
             except StopIteration:
                 # We get here when provider signals there are no more trades to process.
-                # Force processor to return any last unfinished frame
-                frame = self.processor.finish()
+                # Force aggregator to return any last unfinished frame
+                frame = self.aggregator.finish()
                 if frame is not None:
                     self._process_frame(frame)
                 truncated = True
@@ -496,7 +495,7 @@ class Environment(Broker, gym.Env):
         super().reset()
         self.provider.close()
         self.provider = None
-        self.processor.reset()
+        self.aggregator.reset()
         self.action_scheme.reset()
         self.reward_scheme.reset()
         # Reset episode variables

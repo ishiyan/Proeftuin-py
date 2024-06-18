@@ -4,26 +4,41 @@ from matplotlib import pyplot as plt
 
 from env_my_intraday import BinanceMonthlyKlines1mToTradesProvider
 from env_my_intraday import BinanceMonthlyTradesProvider
-from env_my_intraday import IntervalProcessor
+from env_my_intraday import SineTradesProvider
+from env_my_intraday import IntervalTradeAggregator
 from env_my_intraday import EMA, Copy, PriceEncoder
 from env_my_intraday import BuySellCloseAction
 from env_my_intraday import BalanceReward
 from env_my_intraday import Environment
 
-#dir = 'D:/data/binance_monthly_trades/'
+# --------------------------------- data
 #symbol = 'BTCEUR'
-#symbol = 'BTCUSDT'
 #symbol = 'ETHUSDT'
-dir = 'env_my_intraday/data/binance_monthly_klines/'
 symbol = 'BTCUSDT'
 
-provider = BinanceMonthlyKlines1mToTradesProvider(data_dir=dir, symbol=symbol,
-                                    date_from=date(2024, 1, 1), date_to=date(2024, 5, 31))
+#WHAT = 'binance-klines'
+#WHAT = 'binance-trades'
+WHAT = 'sine'
 
-#provider = BinanceMonthlyTradesProvider(data_dir=dir, symbol=symbol,
-#                                  #date_from=date(2024, 5, 1), date_to=date(2024, 5, 31))
-#                                  date_from=date(2018, 5, 1), date_to=date(2018, 5, 31))
-processor = IntervalProcessor(method='time', interval=1*60, duration=(1, 8*60*60))
+if WHAT == 'binance-klines':
+    dir = 'env_my_intraday/data/binance_monthly_klines/'
+    provider = BinanceMonthlyKlines1mToTradesProvider(data_dir = dir, symbol = symbol,
+                        date_from = date(2024, 1, 1), date_to = date(2024, 5, 31))
+elif WHAT == 'binance-trades':
+    dir = 'D:/data/binance_monthly_trades/'
+    provider = BinanceMonthlyTradesProvider(data_dir = dir, symbol = symbol,
+                        #date_from = date(2024, 5, 1), date_to = date(2024, 5, 31))
+                        date_from = date(2018, 5, 1), date_to=date(2018, 5, 31))
+elif WHAT == 'sine':
+    provider = SineTradesProvider(mean = 100, amplitude = 90, SNRdb = 15,
+                    period=(timedelta(minutes=10), timedelta(minutes=30)),
+                    date_from = date(2024, 5, 1), date_to = date(2024, 5, 31))
+else:
+    raise ValueError('Unknown WHAT')
+
+aggregator = IntervalTradeAggregator(method='time', interval=1*60, duration=(1, 8*60*60))
+
+# --------------------------------- features, actions, reward
 period = 100
 atr_name = f'ema_{period}_true_range'
 features_pipeline = [
@@ -31,11 +46,14 @@ features_pipeline = [
     EMA(period=period, source='true_range', write_to='frame'),
     Copy(source=['volume'])
 ]
+
 action_scheme = BuySellCloseAction()
 reward_scheme = BalanceReward(norm_factor=atr_name)
+
+# --------------------------------- environment
 env = Environment(
     provider=provider,
-    processor=processor,
+    aggregator=aggregator,
     features_pipeline=features_pipeline,
     action_scheme=action_scheme,
     reward_scheme=reward_scheme,
@@ -46,6 +64,7 @@ env = Environment(
     episode_max_steps=197
 )
 
+# --------------------------------- loop
 frames=[]
 for i in range(1):
     state, frame = env.reset()

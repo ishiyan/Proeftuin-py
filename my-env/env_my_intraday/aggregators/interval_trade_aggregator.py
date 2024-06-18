@@ -7,9 +7,9 @@ import datetime as dt
 
 from ..providers import Trade
 from ..frame import Frame
-from .processor import Processor
+from .trade_aggregator import TradeAggregator
 
-class IntervalProcessor(Processor):
+class IntervalTradeAggregator(TradeAggregator):
     '''
     Groups trades into frames based on specified interval and methodology.
 
@@ -40,7 +40,7 @@ class IntervalProcessor(Processor):
         super().__init__(**kwargs)
         # Method of how to group the flow of records into frames
         # Frame initial_threshold which depends on selected method
-        assert isinstance(method, str) and (method in IntervalProcessor.FramingMethods)
+        assert isinstance(method, str) and (method in IntervalTradeAggregator.FramingMethods)
         assert isinstance(interval, int) and (interval > 0)
         assert (isinstance(duration, tuple) and (len(duration) == 2) and
                 isinstance(duration[0], Real) and isinstance(duration[1], Real))
@@ -59,7 +59,7 @@ class IntervalProcessor(Processor):
     def reset(self):
         self.frame: Optional[Frame] = None
 
-    def process(self, trades: Sequence[Trade]) -> Optional[Frame]:
+    def aggregate(self, trades: Sequence[Trade]) -> Optional[Frame]:
         result = None
         trade = trades[-1]
         frame = self.frame
@@ -79,20 +79,17 @@ class IntervalProcessor(Processor):
         frame.update(trades)
         
         # Check for the end of frame
-        if (
-            (frame.duration >= self.duration[0]) and (
+        if ((frame.duration >= self.duration[0]) and (
                 ((self.method == 'tick') and (frame.ticks >= self.interval)) or
                 ((self.method == 'volume') and (frame.volume >= self.interval)) or
                 ((self.method == 'money') and (frame.money >= self.interval))
-            ) or
-            (frame.duration >= self.duration[1])
-        ):
+            ) or (frame.duration >= self.duration[1])):
             # Reset current frame
             result = frame.finalize() if (frame is not None) else None
             self.frame = None
             
         return result
-    
+
     def finish(self) -> Optional[Frame]:
         result = self.frame.finalize()
         self.frame = None
