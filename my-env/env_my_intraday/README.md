@@ -46,11 +46,12 @@ The number of trades per segment will be determined by this price increment `ste
 step = spread * (high + low) / 2
 ```
 
-To create a `open -> high` sequence, we start from `open` and end before `high`,
-incrementing by `step` each time. For example, if `open` is 1, `high` is 5, and `step` is 1,
-this would create the sequence [1, 2, 3, 4].
+To create an *open -> high* sequence in *zig-zag 1*, we start from `open`
+and end before `high`, incrementing by `step` each time.
+For example, if `open` is 1, `high` is 5, and `step` is 1, this would
+create the sequence *[1, 2, 3, 4]*.
 
-We can experiment with different valuse of the `spread` to see how many trades we will generate.
+We can experiment with different values of the `spread` to see how many trades we will generate.
 
 ```python
 from environment import BarToTradeConverter
