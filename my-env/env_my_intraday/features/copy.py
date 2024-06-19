@@ -28,7 +28,8 @@ class Copy(Feature):
         elif isinstance(source, Sequence):
             self.source = source
         else:
-            raise ValueError
+            raise ValueError(f'invalid source {source}')
+
         self.spaces = {}
         for name in self.source:
             self.names.append(name)

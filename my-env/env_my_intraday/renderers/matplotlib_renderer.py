@@ -34,6 +34,11 @@ BROWNY_LIGHT = {
     'line': 'tab:brown', 'fig': 'white', 'ax': 'white', 'text': 'black',
     'title': 'black', 'alert': 'tab:red'}
 
+# Linear interpolation for the figure widh
+MIN_WIDTH, MAX_WIDTH = 6.4, 12.8
+MIN_STEPS, MAX_STEPS = 128, 312
+STEP_DELTA = (MAX_WIDTH - MIN_WIDTH) / (MAX_STEPS - MIN_STEPS)
+
 class MatplotlibRenderer(Renderer):
 
     def __init__(self,
@@ -83,18 +88,10 @@ class MatplotlibRenderer(Renderer):
             plt.close(self.figure)
 
         def determine_figsize(episode_max_steps):
-            if episode_max_steps is None:
-                return (6.4, 4.8)
-            elif episode_max_steps < 128:
-                return (6.4, 4.8)
-            elif episode_max_steps < 196:
-                return (8.0, 4.8)
-            elif episode_max_steps < 256:
-                return (9.6, 4.8)
-            elif episode_max_steps < 312:
-                return (11.2, 4.8)
-            else:
-                return (12.8, 4.8)
+            width = MIN_WIDTH + STEP_DELTA * (episode_max_steps - MIN_STEPS)
+            # Constrain width to be within [MIN_WIDTH, MAX_WIDTH]
+            width = max(MIN_WIDTH, min(width, MAX_WIDTH))
+            return (width, 4.8)
             
         fig = plt.figure(dpi = self.dpi, layout='constrained',
             figsize=determine_figsize(episode_max_steps))
