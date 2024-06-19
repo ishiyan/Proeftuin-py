@@ -1,8 +1,7 @@
 from __future__ import annotations
 from numbers import Real
 from typing import Sequence, Union, Optional
-from arrow import Arrow
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 from .providers import Trade, TradeOI
 
@@ -12,10 +11,10 @@ class Frame(object):
     """
     
     def __init__(self, **kwargs):
-        self.time_start: Optional[Arrow] = None
+        self.time_start: Optional[datetime] = None
         """Date and time of beginning of frame. Type is the same as specified in trades."""
 
-        self.time_end: Optional[Arrow] = None
+        self.time_end: Optional[datetime] = None
         """Date and time of the end of frame. Type is the same as specified in trades."""
         
         self.duration: Optional[timedelta] = None
