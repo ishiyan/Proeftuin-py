@@ -21,7 +21,11 @@ def price_logreturn(p0, p1):
     assert (p1 is None) or (p1 >= 0)
     return math.log(p0 / p1) if (p0 is not None) and (p1 is not None) and (p1 != 0) else 0.0
 
-class PriceEncoder(Feature):
+# https://scikit-learn.org/stable/auto_examples/preprocessing/plot_all_scaling.html#plot-all-scaling-max-abs-scaler-section
+# https://github.com/scikit-learn/scikit-learn/blob/2621573e6/sklearn/preprocessing/_data.py#L291
+
+
+class PriceScaler(Feature):
     """
     Encodes price values in time-series via different methods
 

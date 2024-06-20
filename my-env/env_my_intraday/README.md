@@ -311,6 +311,88 @@ run(provider, aggregator, number_of_frames, datetime_cutoff)
 | 2024-05-01 00:04:57 | 2024-05-01 00:05:52 | 493 | 3013.53 | 3016.71 | 3013.01 | 3016.71 | 200.80 | 605440.33 |
 | 2024-05-01 00:05:52 | 2024-05-01 00:06:31 | 687 | 3016.75 | 3017.33 | 3014.65 | 3015.36 | 199.13 | 600630.51 |
 
+## Feature engineering
+
+Rinforcement Learning agents operate on the current `state` of environment, sometimes called `observation`.
+
+We cannot use raw prices and volume in the `state` because different episodes may have different price and volume ranges.
+
+Ideally, we want that `features` of the `state` are normalized to `[-1,1]` or `[0,1]` to speedup learning.
+
+Below we inspect how we can encode, scale, and normalize our `features`.
+
+## Price
+
+Raw price values are not good for machine learning models, as they don't satisfy `i.i.d.` criteria.
+
+We can encode all four `open`, `high`, `low` and `close` prices as returns from the previous `close` price.
+![Encoding price as returns from the previous close](./readme/ETHUSDT@Binance(k)%20time@21600%20price%20encoder%20ret.svg)
+
+The correlation with original prices is shown below.
+
+![Correlation heatmap](./readme/ETHUSDT@Binance(k)%20time@21600%20price%20encoder%20correlation%20ret+p.svg)
+
+![Correlation heatmap](./readme/ETHUSDT@Binance(k)%20time@21600%20price%20encoder%20correlation%20ret.svg)
+
+### Time
+
+Machine Learning models can't efficiently utilize raw timestamp values.
+
+Given a timestamp they can hardly say:
+
+- is it summer or winter?
+- is it monday or friday?
+- is it morning or noon?
+
+We can convert timestamp into some floating numbers to make it easier
+for models to use it.
+
+- `day of year` in [0,1], where 0 is *January 1st*, 1 is *December 31st*
+- `day of week` in [0,1], where 0 is *Monday*, 1 is *Sunday*
+- `time of day` in [0,1], where 0 is *00:00:00*, 1 is *23:59:59*
+
+Below is the chart showing encoded time.
+![Time encoding chart](./readme/ETHUSDT@Binance(k)%20time@21600%20time%20encoder.svg)
+
+You can explore the encoded values in the table below.
+
+| time start | time end | yday time start | wday time start | tday time start | yday time end | wday time end | tday time end |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 2024-03-05 00:00:00 | 2024-03-05 06:00:00 | 0.17 | 0.29 | 0.00 | 0.17 | 0.29 | 0.25 |
+| 2024-03-05 06:00:00 | 2024-03-05 12:00:00 | 0.17 | 0.29 | 0.25 | 0.17 | 0.29 | 0.50 |
+| 2024-03-05 12:00:00 | 2024-03-05 18:00:00 | 0.17 | 0.29 | 0.50 | 0.17 | 0.29 | 0.75 |
+| 2024-03-05 18:00:00 | 2024-03-06 00:00:00 | 0.17 | 0.29 | 0.75 | 0.18 | 0.43 | 0.00 |
+| 2024-03-06 00:00:00 | 2024-03-06 06:00:00 | 0.18 | 0.43 | 0.00 | 0.18 | 0.43 | 0.25 |
+| 2024-03-06 06:00:00 | 2024-03-06 12:00:00 | 0.18 | 0.43 | 0.25 | 0.18 | 0.43 | 0.50 |
+| 2024-03-06 12:00:00 | 2024-03-06 18:00:00 | 0.18 | 0.43 | 0.50 | 0.18 | 0.43 | 0.75 |
+| 2024-03-06 18:00:00 | 2024-03-07 00:00:00 | 0.18 | 0.43 | 0.75 | 0.18 | 0.57 | 0.00 |
+| 2024-03-07 00:00:00 | 2024-03-07 06:00:00 | 0.18 | 0.57 | 0.00 | 0.18 | 0.57 | 0.25 |
+| 2024-03-07 06:00:00 | 2024-03-07 12:00:00 | 0.18 | 0.57 | 0.25 | 0.18 | 0.57 | 0.50 |
+| 2024-03-07 12:00:00 | 2024-03-07 18:00:00 | 0.18 | 0.57 | 0.50 | 0.18 | 0.57 | 0.75 |
+| 2024-03-07 18:00:00 | 2024-03-08 00:00:00 | 0.18 | 0.57 | 0.75 | 0.18 | 0.71 | 0.00 |
+| 2024-03-08 00:00:00 | 2024-03-08 06:00:00 | 0.18 | 0.71 | 0.00 | 0.18 | 0.71 | 0.25 |
+| 2024-03-08 06:00:00 | 2024-03-08 12:00:00 | 0.18 | 0.71 | 0.25 | 0.18 | 0.71 | 0.50 |
+| 2024-03-08 12:00:00 | 2024-03-08 18:00:00 | 0.18 | 0.71 | 0.50 | 0.18 | 0.71 | 0.75 |
+| 2024-03-08 18:00:00 | 2024-03-09 00:00:00 | 0.18 | 0.71 | 0.75 | 0.19 | 0.86 | 0.00 |
+| 2024-03-09 00:00:00 | 2024-03-09 06:00:00 | 0.19 | 0.86 | 0.00 | 0.19 | 0.86 | 0.25 |
+| 2024-03-09 06:00:00 | 2024-03-09 12:00:00 | 0.19 | 0.86 | 0.25 | 0.19 | 0.86 | 0.50 |
+| 2024-03-09 12:00:00 | 2024-03-09 18:00:00 | 0.19 | 0.86 | 0.50 | 0.19 | 0.86 | 0.75 |
+| 2024-03-09 18:00:00 | 2024-03-10 00:00:00 | 0.19 | 0.86 | 0.75 | 0.19 | 1.00 | 0.00 |
+| 2024-03-10 00:00:00 | 2024-03-10 06:00:00 | 0.19 | 1.00 | 0.00 | 0.19 | 1.00 | 0.25 |
+| 2024-03-10 06:00:00 | 2024-03-10 12:00:00 | 0.19 | 1.00 | 0.25 | 0.19 | 1.00 | 0.50 |
+| 2024-03-10 12:00:00 | 2024-03-10 18:00:00 | 0.19 | 1.00 | 0.50 | 0.19 | 1.00 | 0.75 |
+| 2024-03-10 18:00:00 | 2024-03-11 00:00:00 | 0.19 | 1.00 | 0.75 | 0.19 | 0.14 | 0.00 |
+| 2024-03-11 00:00:00 | 2024-03-11 06:00:00 | 0.19 | 0.14 | 0.00 | 0.19 | 0.14 | 0.25 |
+| 2024-03-11 06:00:00 | 2024-03-11 12:00:00 | 0.19 | 0.14 | 0.25 | 0.19 | 0.14 | 0.50 |
+| 2024-03-11 12:00:00 | 2024-03-11 18:00:00 | 0.19 | 0.14 | 0.50 | 0.19 | 0.14 | 0.75 |
+| 2024-03-11 18:00:00 | 2024-03-12 00:00:00 | 0.19 | 0.14 | 0.75 | 0.19 | 0.29 | 0.00 |
+| 2024-03-12 00:00:00 | 2024-03-12 06:00:00 | 0.19 | 0.29 | 0.00 | 0.19 | 0.29 | 0.25 |
+| 2024-03-12 06:00:00 | 2024-03-12 12:00:00 | 0.19 | 0.29 | 0.25 | 0.19 | 0.29 | 0.50 |
+| 2024-03-12 12:00:00 | 2024-03-12 18:00:00 | 0.19 | 0.29 | 0.50 | 0.19 | 0.29 | 0.75 |
+
+The correlation heatmap looks like this.
+![Correlation heatmap](./readme/ETHUSDT@Binance(k)%20time@21600%20time%20encoder%20correlation.svg)
+
 ## Data sources
 
 ### Binance
