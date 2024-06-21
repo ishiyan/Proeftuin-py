@@ -36,5 +36,6 @@ from .snapshot import Snapshot
 from .stochastic import Stochastic
 from .time_encoder import TimeEncoder
 from .vi import VI
+from .window_scaler import WindowScaler
 from .wma_signal import WMASignal
 from .zema import ZEMA

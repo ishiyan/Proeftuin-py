@@ -325,6 +325,8 @@ Below we inspect how we can encode, scale, and normalize our `features`.
 
 Raw price values are not good for machine learning models, as they don't satisfy `i.i.d.` criteria.
 
+### Using returns instead if raw prices
+
 We can encode all four `open`, `high`, `low` and `close` prices as returns from the previous `close` price.
 ![Encoding price as returns from the previous close](./readme/ETHUSDT@Binance(k)%20time@21600%20price%20encoder%20ret.svg)
 
@@ -333,6 +335,66 @@ The correlation with original prices is shown below.
 ![Correlation heatmap](./readme/ETHUSDT@Binance(k)%20time@21600%20price%20encoder%20correlation%20ret+p.svg)
 
 ![Correlation heatmap](./readme/ETHUSDT@Binance(k)%20time@21600%20price%20encoder%20correlation%20ret.svg)
+
+### Min-max scaling
+
+Also known as [*rescaling* or *min-max normalization*](https://en.wikipedia.org/wiki/Feature_scaling), this is the simplest method:
+$$x'={\frac {x-{\text{min}}(x)}{{\text{max}}(x)-{\text{min}}(x)}}$$
+where $x$ is an original value, $x'$ is the normalized value.
+
+It rescales $x\prime$ to [0, 1].
+We can generalize this metod to rescale to an arbitrary set of values [a, b]:
+$$x'=a+{\frac {(x-{\text{min}}(x))(b-a)}{{\text{max}}(x)-{\text{min}}(x)}}$$
+
+To rescale to [-1, 1] ($a=-1$, $b=1$), we can rewrite this equation as
+$$x'=2{\frac {(x-{\text{min}}(x))}{{\text{max}}(x)-{\text{min}}(x)}}-1$$
+
+This method is very sensitive to the presence of outliers.
+
+In the following illustration, all four `open`, `high`, `low` and `close`
+were scaled using `minmax` on the window of last 64 prices.
+
+![Scaling price using minmax](./readme/ETHUSDT@Binance(k)%20time@21600%20minmax%20scaling.svg)
+
+The correlation with original prices is shown below.
+
+![Correlation heatmap](./readme/ETHUSDT@Binance(k)%20time@21600%20minmax%20scaling%20correlation%20with%20price.svg)
+
+![Correlation heatmap](./readme/ETHUSDT@Binance(k)%20time@21600%20minmax%20scaling%20correlation.svg)
+
+The distribution of scaled prices in comparison with original ones is:
+
+| open | high | low | close |
+| --- | --- | --- | --- |
+| ![open](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20open.svg) | ![high](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20high.svg) | ![low](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20low.svg) | ![close](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20close.svg) |
+| ![mmopen](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20minmax(64)%20open.svg) | ![mmhigh](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20minmax(64)%20high.svg) | ![mmlow](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20minmax(64)%20low.svg) | ![mmclose](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20minmax(64)%20close.svg) |
+
+|  | raw | minmax |
+| --- | --- | --- |
+| open | ![open](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20open.svg) | ![minmax open](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20minmax(64)%20open.svg) |
+| high | ![high](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20high.svg) | ![minmax high](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20minmax(64)%20high.svg) |
+| low | ![low](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20low.svg) | ![minmax low](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20minmax(64)%20low.svg) |
+| close | ![close](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20close.svg) | ![minmax close](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20minmax(64)%20close.svg) |
+
+### Z-score scaling
+
+Also known as [*standardization* or *Z-score normalization*](https://en.wikipedia.org/wiki/Feature_scaling), this method gets its name from the concept of the [*standard score*](https://en.wikipedia.org/wiki/Standard_score) used in statistics.
+
+The *standard score* is the number of *standard deviations* by which the observed value is above or below the *mean* value:
+$$x'={\frac {x-{\bar {x}}}{\sigma }}$$
+where ${\bar{x}}$ is the mean of the $x$ vector, and $\sigma$ is its standard deviation.
+
+This method cannot guarantee balanced feature scales in the presence of outliers, because they have an influence when computing the empirical mean and standard deviation.
+
+Also, the rescaled data doesn't fit into [-1, 1] interval.
+
+### Robust scaling
+
+The [Robust](https://en.wikipedia.org/wiki/Robust_measures_of_scale)
+scaling subtracts the *median* and scales the data according to the *IQR* (Interquartile Range).
+The *IQR* is the range between the 1st quartile (25th quantile) and the 3rd quartile (75th quantile).
+
+Since this method is based on percentiles, it is not influenced by a small number of large outliers.
 
 ### Time
 

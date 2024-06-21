@@ -2,7 +2,9 @@ from collections import OrderedDict
 from datetime import date, datetime, timezone
 from typing import List, Tuple
 
+import numpy as np
 import pandas as pd
+from scipy.stats import gaussian_kde
 from matplotlib import pyplot as plt
 
 FIG_EXT = 'svg' # 'png' or 'svg'
@@ -18,21 +20,36 @@ from env_my_intraday.features import Copy
 from env_my_intraday.features import Feature
 from env_my_intraday.features import TimeEncoder
 from env_my_intraday.features import PriceEncoder
+from env_my_intraday.features import WindowScaler
 from env_my_intraday.rewards.constant_reward import ConstantReward
 from env_my_intraday.providers import Trade, Provider, BinanceMonthlyTradesProvider, BinanceMonthlyKlines1mToTradesProvider
 from env_my_intraday import TradeAggregator, IntervalTradeAggregator
 from env_my_intraday import Frame
 
+# https://matplotlib.org/stable/gallery/color/named_colors.html
+D_UP = 'limegreen'
+D_DN = 'tab:blue'
+D_LINE = 'tab:blue'
+D_FIG = '#202020'
+D_AX = '#303030'
+D_TXT = '#666666'
+D_TIT = '#d0d0d0'
+KDE_LINE = 'limegreen'
+HIST_BAR = 'tab:blue'
+
 DO_COPY = False
 DO_TIME_ENCODER = False
 DO_RAW_PRICE = False
-DO_PRICE_ENCODER = True
+DO_PRICE_ENCODER = False
+DO_WINDOW_SCALER_RAW = False
+DO_WINDOW_SCALER_MINMAX = True
 
 def plot_features(df, title, 
         panes: List[List[str]]=[],
         dark=True, show_legend=False, figsize=(8, 4)):
     fig = plt.figure(dpi=120, layout='constrained', figsize=figsize)
-    fig.set_facecolor('#202020' if dark else 'white')
+    if dark:
+        fig.set_facecolor(D_FIG)
     ax_cnt = len(panes)
     ax_panes = []
     gs = fig.add_gridspec(3+ax_cnt, 1)
@@ -40,22 +57,27 @@ def plot_features(df, title,
     for i in range(ax_cnt):
         ax_panes.append(fig.add_subplot(gs[3+i, 0], sharex = ax))
     for a in [ax] + ax_panes:
-        a.set_facecolor('#303030' if dark else 'white')
-        a.tick_params(labelbottom=False, labelsize='small',
-                      colors='#666666' if dark else 'black')
-        a.grid(color='#666666' if dark else 'black')
+        if dark:
+            a.set_facecolor(D_AX)
+            a.grid(color=D_TXT)
+            a.tick_params(labelbottom=False, labelsize='small', colors=D_TXT)
+        else:
+            a.tick_params(labelbottom=False, labelsize='small')
         a.grid(False)
         a.tick_params(labelbottom=False)
     if ax_cnt > 0:
         ax_panes[-1].tick_params(labelbottom=True)
     else:
         ax.tick_params(labelbottom=True)
-    ax.set_title(title, color='#d0d0d0' if dark else 'black')
+    if dark:
+        ax.set_title(title, color=D_TIT)
+    else:
+        ax.set_title(title)
 
     wick_width=.2
     body_width=.8
-    up_color='limegreen'
-    down_color='tab:blue'
+    up_color=D_UP
+    down_color=D_DN
 
     up = df[df.close >= df.open]
     down = df[df.close < df.open]
@@ -73,39 +95,110 @@ def plot_features(df, title,
             ax_panes[i].plot(df.index, df[column], label=column)#, color='tab:blue')
         if show_legend:
             legend = ax_panes[i].legend(loc='best', fontsize='small', )
-            legend.get_frame().set_facecolor('#202020' if dark else 'white')
             legend.get_frame().set_alpha(0.1)
-            for text in legend.get_texts():
-                text.set_color(color='#d0d0d0' if dark else 'black')
+            if dark:
+                legend.get_frame().set_facecolor(D_FIG)
+                for text in legend.get_texts():
+                    text.set_color(color=D_TIT)
         else:
             ax_panes[i].legend().set_visible(False)
-            ax_panes[i].set_title(' / '.join(pane), fontsize='small',
-                                  color='#d0d0d0' if dark else 'black')
+            tit = ' / '.join(pane)
+            if dark:
+                ax_panes[i].set_title(tit, fontsize='small', color=D_TIT)
+            else:
+                ax_panes[i].set_title(tit, fontsize='small')
     return fig
 
-def plot_correllation_heatmap(df, title=None, cmap=None, coeff=False, coeff_color=None, dark=True):
+def plot_correllation_heatmap(df, title=None, cmap=None, coeff=False, coeff_color=None,
+                                                        dark=True, feature_decimals=2):
     fig, ax = plt.subplots(dpi=120, layout='constrained')
-    fig.set_facecolor('#202020' if dark else 'white')
+    if dark:
+        fig.set_facecolor(D_FIG)
     # https://matplotlib.org/stable/users/explain/colors/colormaps.html
     if cmap is None:
-        cmap = 'winter'
-    cax = ax.imshow(df, cmap=cmap, interpolation='nearest')
-    fig.colorbar(cax,)
+        cmap = 'rainbow_r' # rainbow_r Spectral coolwarm_r bwr_r RdYlBu RdYlGn
+    cax = ax.imshow(df, cmap=cmap, interpolation='nearest', vmin=-1, vmax=1)
+    cb = fig.colorbar(cax)
+    cb.set_ticks([-1, -0.5, 0, 0.5, 1])
+    if dark:
+        cb.set_label('Spearman correlation', fontsize='small', color=D_TIT)
+        cb.ax.tick_params(labelsize='small', colors=D_TXT)
+    else:
+        cb.set_label('Spearman correlation', fontsize='small')
+        cb.ax.tick_params(labelsize='small')
     if title is not None:
-        ax.set_title(title, color='#d0d0d0' if dark else 'black')
+        if dark:
+            ax.set_title(title, color=D_TIT)
+        else:
+            ax.set_title(title, color=D_TIT)
     ax.set_xticks(range(len(df.columns)))
-    ax.tick_params(axis='x', colors='#666666' if dark else 'black')
-    ax.set_xticklabels(df.columns, rotation=45, fontsize='small', color='#d0d0d0' if dark else 'black')
     ax.set_yticks(range(len(df.columns)))
-    ax.tick_params(axis='y', colors='#666666' if dark else 'black')
-    ax.set_yticklabels(df.columns, fontsize='small', color='#d0d0d0' if dark else 'black')
+    if dark:
+        ax.tick_params(axis='x', colors=D_TXT)
+        ax.set_xticklabels(df.columns, rotation=45, fontsize='small', color=D_TIT)
+        ax.tick_params(axis='y', colors=D_TXT)
+        ax.set_yticklabels(df.columns, fontsize='small', color=D_TIT)
+    else:
+        ax.set_xticklabels(df.columns, rotation=45, fontsize='small')
+        ax.set_yticklabels(df.columns, fontsize='small')
     if coeff:
         if coeff_color is None:
             coeff_color = 'black'
         for i in range(len(df.columns)):
             for j in range(len(df.columns)):
-                ax.text(j, i, f'{df.iloc[i, j]:.2f}', ha='center', va='center',
+                ax.text(j, i, f'{df.iloc[i, j]:.{feature_decimals}f}', ha='center', va='center',
                         fontsize='small', color=coeff_color)
+    return fig
+
+def plot_distribution_histogram(df, columns, bins='auto', dark=True,
+                                show_legend=True, figsize=(4.8, 3.6)):
+    """
+        Don't plot multiple columns on the same histogram,
+        because colors are ugly an plot is unreadable.
+    """
+    # bins: integer or 'auto', 'scott', 'rice', 'sturges', 'sqrt'    
+    fig, ax = plt.subplots(dpi=120, layout='constrained', figsize=figsize)
+    if dark:
+        fig.set_facecolor(D_FIG)
+        ax.set_facecolor(D_AX)
+        ax.tick_params(labelbottom=True, labelsize='small', colors=D_TXT)
+        ax.grid(color=D_TXT)
+        ax.set_ylabel('probability density', fontsize='small', color=D_TXT)
+    else:
+        ax.tick_params(labelbottom=True, labelsize='small')
+        ax.set_ylabel('probability density', fontsize='small')
+
+    for column in columns:
+        # Remove NaN values for kernel density estimate (KDE) calculation
+        data = df[column].dropna()
+        n, bins_, patches_ = ax.hist(data, bins=bins, density=True, color=HIST_BAR,
+                edgecolor=D_AX if dark else 'white', label=column)
+        # Calculate and plot KDE
+        kde = gaussian_kde(data)
+        x_range = np.linspace(data.min(), data.max(), 1000)
+        kde_values = kde(x_range)
+        # Scale KDE to match histogram
+        max_hist_y_value = max(n)
+        max_kde_y_value = max(kde_values)
+        scale_factor = max_hist_y_value / max_kde_y_value
+        ax.plot(x_range, kde_values * scale_factor, color=KDE_LINE,
+                label=column + ' KDE')
+    ax.grid(False)
+    if show_legend:
+        legend = ax.legend(loc='best', fontsize='small')
+        legend.get_frame().set_alpha(0.1)
+        if dark:
+            legend.get_frame().set_facecolor(D_AX)
+            legend.get_frame().set_edgecolor(D_FIG)
+            for text in legend.get_texts():
+                text.set_color(color=D_TIT)
+    else:
+        ax.legend().set_visible(False)
+        tit = 'probability density of ' + ' / '.join(columns) + ' (bins: ' + str(bins) + ')'
+        if dark:
+            ax.set_title(tit, fontsize='small', color=D_TIT)
+        else:
+            ax.set_title(tit, fontsize='small')
     return fig
 
 def df_from_frames_and_observations(frames, observations):
@@ -190,7 +283,12 @@ def print_frames_and_observations(
             f"{frame.close:.2f} | {frame.volume:.2f}"
         obs = observations[i]
         for key in last_keys:
-            row += f" | {obs[key]:.{feature_decimals}f}"
+            v = obs[key]
+            if isinstance(v, float):
+                row += f" | {v:.{feature_decimals}f}"
+            else:
+                row += f" | {v}"
+            #row += f" | {obs[key]:.{feature_decimals}f}"
         row += ' |'
         lines.append(row)
     if filename is not None:
@@ -362,3 +460,64 @@ if DO_PRICE_ENCODER:
     fig.savefig('_light/'+name_6h+' price encoder correlation ret.'+FIG_EXT)
     plt.show()
     plt.close(fig)
+
+if DO_WINDOW_SCALER_RAW:
+    features: List[Feature] = [
+        WindowScaler(source=['open', 'high', 'low', 'close'], method='raw',
+                            copy_period=2, write_to='state'),
+    ]
+    frames_6h, states_6h = get_frames_and_observations(provider, aggregator_6h,
+            episode_steps, lookback_steps, features, datetime_cutoff)
+    print('window scaler raw', 'frames', len(frames_6h), 'states', len(states_6h))
+    print_frames_and_observations(frames_6h, states_6h, filename=name_6h+' window scaler raw.txt', feature_decimals=6)
+    df = df_from_frames_and_observations(frames_6h, states_6h)
+
+if DO_WINDOW_SCALER_MINMAX:
+    features: List[Feature] = [
+        WindowScaler(source=['open', 'high', 'low', 'close'], method='minmax',
+                            scale_period=64, copy_period=1, write_to='state'),
+    ]
+    frames_6h, states_6h = get_frames_and_observations(provider, aggregator_6h,
+            episode_steps, lookback_steps, features, datetime_cutoff)
+    print('window scaler minmax', 'frames', len(frames_6h), 'states', len(states_6h))
+    print_frames_and_observations(frames_6h, states_6h, filename=name_6h+' minmax scaling.txt', feature_decimals=6)
+    df = df_from_frames_and_observations(frames_6h, states_6h)
+    df = df.rename(columns={
+        'minmax(64)_1_open': 'minmax(64) open',
+        'minmax(64)_1_high': 'minmax(64) high',
+        'minmax(64)_1_low': 'minmax(64) low',
+        'minmax(64)_1_close': 'minmax(64) close'})
+
+    for dark in [True, False]:
+        fig = plot_features(df, name_6h+' minmax scaling', show_legend=False, dark=dark,
+            panes=[['minmax(64) open'], ['minmax(64) high'], ['minmax(64) low'], ['minmax(64) close'],
+        ])
+        fig.savefig('_'+('dark' if dark else 'light')+'/'+name_6h+' minmax scaling.'+FIG_EXT)
+        #plt.show()
+        plt.close(fig)
+
+    corr = df[['open', 'high', 'low', 'close',
+            'minmax(64) open', 'minmax(64) high', 'minmax(64) low', 'minmax(64) close',
+        ]].corr(method='pearson') # Pearson correlation coefficient
+    for dark in [True, False]:
+        fig = plot_correllation_heatmap(corr, None, coeff=True, dark=dark)
+        fig.savefig('_'+('dark' if dark else 'light')+'/'+name_6h+' minmax scaling correlation with price.'+FIG_EXT)
+        #plt.show()
+        plt.close(fig)
+
+    corr = df[[
+            'minmax(64) open', 'minmax(64) high', 'minmax(64) low', 'minmax(64) close',
+        ]].corr(method='pearson') # Pearson correlation coefficient
+    for dark in [True, False]:
+        fig = plot_correllation_heatmap(corr, None, coeff=True, dark=dark)
+        fig.savefig('_'+('dark' if dark else 'light')+'/'+name_6h+' minmax scaling correlation.'+FIG_EXT)
+        #plt.show()
+        plt.close(fig)
+
+    for column in ['open', 'high', 'low', 'close', 'minmax(64) open',
+                   'minmax(64) high', 'minmax(64) low', 'minmax(64) close']:
+        for dark in [True, False]:
+            fig = plot_distribution_histogram(df, [column], dark=dark)
+            fig.savefig('_'+('dark' if dark else 'light')+'/'+name_6h+' distr '+column+'.'+FIG_EXT)
+            #plt.show()
+            plt.close(fig)
