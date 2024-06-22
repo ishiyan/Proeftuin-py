@@ -1,0 +1,24 @@
+scaler-zscore/dark
+scaler-zscore/light
+-----------------------------
+ETHUSDT@Binance(k) time@21600 scaler-zscore.svg
+ETHUSDT@Binance(k) time@21600 scaler-zscore candlesticks.svg
+
+ETHUSDT@Binance(k) time@21600 scaler-zscore corr+p.svg
+ETHUSDT@Binance(k) time@21600 scaler-zscore corr.svg
+
+ETHUSDT@Binance(k) time@21600 distr zscore close.svg
+ETHUSDT@Binance(k) time@21600 distr zscore high.svg
+ETHUSDT@Binance(k) time@21600 distr zscore low.svg
+ETHUSDT@Binance(k) time@21600 distr zscore open.svg
+-----------------------------
+./readme/scaler-zscore/ETHUSDT@Binance(k)%20time@21600%20scaler-zscore.svg
+./readme/scaler-zscore/ETHUSDT@Binance(k)%20time@21600%20scaler-zscore%20candlesticks.svg
+
+./readme/scaler-zscore/ETHUSDT@Binance(k)%20time@21600%20scaler-zscore%20corr+p.svg
+./readme/scaler-zscore/ETHUSDT@Binance(k)%20time@21600%20scaler-zscore%20corr.svg
+
+./readme/scaler-zscore/ETHUSDT@Binance(k)%20time@21600%20distr%20zscore%20close.svg
+./readme/scaler-zscore/ETHUSDT@Binance(k)%20time@21600%20distr%20zscore%20high.svg
+./readme/scaler-zscore/ETHUSDT@Binance(k)%20time@21600%20distr%20zscore%20low.svg
+./readme/scaler-zscore/ETHUSDT@Binance(k)%20time@21600%20distr%20zscore%20open.svg

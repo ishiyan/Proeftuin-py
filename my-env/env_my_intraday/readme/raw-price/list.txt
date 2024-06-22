@@ -1,0 +1,20 @@
+raw-price/dark
+raw-price/light
+------------------
+ETHUSDT@Binance(k) time@21600 raw price.svg
+
+ETHUSDT@Binance(k) time@21600 raw price corr.svg
+
+ETHUSDT@Binance(k) time@21600 raw price distr close.svg
+ETHUSDT@Binance(k) time@21600 raw price distr high.svg
+ETHUSDT@Binance(k) time@21600 raw price distr low.svg
+ETHUSDT@Binance(k) time@21600 raw price distr open.svg
+------------------
+./readme/raw-price/ETHUSDT@Binance(k)%20time@21600%20raw%20price.svg
+
+./readme/raw-price/ETHUSDT@Binance(k)%20time@21600%20raw%20price%20corr.svg
+
+./readme/raw-price/ETHUSDT@Binance(k)%20time@21600%20raw%20price%20distr%20close.svg
+./readme/raw-price/ETHUSDT@Binance(k)%20time@21600%20raw%20price%20distr%20high.svg
+./readme/raw-price/ETHUSDT@Binance(k)%20time@21600%20raw%20price%20distr%20low.svg
+./readme/raw-price/ETHUSDT@Binance(k)%20time@21600%20raw%20price%20distr%20open.svg

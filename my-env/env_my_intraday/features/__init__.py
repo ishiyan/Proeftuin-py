@@ -27,6 +27,7 @@ from .log_return import LogReturn
 from .market_dimension import MarketDimension
 from .mul import Mul
 from .obv import OBV
+from .ohlc_ratios import OhlcRatios
 from .parabolic_sar import ParabolicSAR
 from .price_dynamics import PriceDynamics
 from .price_encoder import PriceEncoder

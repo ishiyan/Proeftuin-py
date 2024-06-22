@@ -259,57 +259,17 @@ run(provider, aggregator, number_of_frames, datetime_cutoff)
 
 ![Equi-time chart](./readme/ETHUSDT@Binance(t)%20time@60.svg)
 
-| Time start | Time end | Ticks | Open | High | Low | Close | Volume | Money |
-| ---------- | -------- | ----- | ---- | ---- | --- | ----- | ------ | ----- |
-| 2024-05-01 00:00:00 | 2024-05-01 00:01:00 | 804 | 3014.04 | 3016.83 | 3013.31 | 3016.82 | 361.80 | 1090668.35 |
-| 2024-05-01 00:01:00 | 2024-05-01 00:02:00 | 539 | 3016.83 | 3019.69 | 3015.84 | 3017.72 | 128.95 | 389092.73 |
-| 2024-05-01 00:02:00 | 2024-05-01 00:03:00 | 770 | 3017.72 | 3017.72 | 3012.19 | 3012.19 | 328.99 | 991904.22 |
-| 2024-05-01 00:03:00 | 2024-05-01 00:04:00 | 472 | 3012.19 | 3014.00 | 3012.00 | 3013.99 | 81.52 | 245612.95 |
-| 2024-05-01 00:04:00 | 2024-05-01 00:05:00 | 376 | 3013.99 | 3015.41 | 3013.24 | 3013.39 | 115.26 | 347408.82 |
-| 2024-05-01 00:05:00 | 2024-05-01 00:06:00 | 521 | 3013.39 | 3016.83 | 3013.01 | 3016.41 | 196.93 | 593847.83 |
-| 2024-05-01 00:06:00 | 2024-05-01 00:07:00 | 970 | 3016.41 | 3017.33 | 3014.65 | 3015.19 | 486.87 | 1468407.25 |
-
 ### Equi-tick
 
 ![Equi-tick chart](./readme/ETHUSDT@Binance(t)%20tick@600.svg)
-
-| Time start | Time end | Ticks | Open | High | Low | Close | Volume | Money |
-| ---------- | -------- | ----- | ---- | ---- | --- | ----- | ------ | ----- |
-| 2024-05-01 00:00:00 | 2024-05-01 00:00:45 | 600 | 3014.04 | 3015.00 | 3013.31 | 3015.00 | 249.40 | 751687.13 |
-| 2024-05-01 00:00:45 | 2024-05-01 00:01:35 | 600 | 3015.00 | 3019.69 | 3015.00 | 3017.71 | 195.96 | 591121.84 |
-| 2024-05-01 00:01:35 | 2024-05-01 00:02:37 | 600 | 3017.70 | 3018.01 | 3013.63 | 3013.64 | 241.19 | 727576.01 |
-| 2024-05-01 00:02:37 | 2024-05-01 00:03:19 | 600 | 3013.64 | 3013.80 | 3012.00 | 3013.05 | 190.63 | 574354.19 |
-| 2024-05-01 00:03:19 | 2024-05-01 00:05:02 | 600 | 3013.10 | 3015.41 | 3013.00 | 3013.24 | 142.69 | 430064.09 |
-| 2024-05-01 00:05:02 | 2024-05-01 00:06:06 | 600 | 3013.24 | 3016.83 | 3013.01 | 3015.55 | 257.79 | 777424.97 |
-| 2024-05-01 00:06:06 | 2024-05-01 00:06:31 | 600 | 3015.50 | 3017.33 | 3014.65 | 3016.10 | 262.01 | 790198.70 |
 
 ### Equi-volume
 
 ![Equi-volume chart](./readme/ETHUSDT@Binance(t)%20volume@100.svg)
 
-| Time start | Time end | Ticks | Open | High | Low | Close | Volume | Money |
-| ---------- | -------- | ----- | ---- | ---- | --- | ----- | ------ | ----- |
-| 2024-05-01 00:00:00 | 2024-05-01 00:00:21 | 301 | 3014.04 | 3014.79 | 3013.31 | 3014.22 | 101.25 | 305145.95 |
-| 2024-05-01 00:00:21 | 2024-05-01 00:00:42 | 217 | 3014.21 | 3014.60 | 3013.58 | 3013.64 | 101.20 | 305008.34 |
-| 2024-05-01 00:00:42 | 2024-05-01 00:00:51 | 164 | 3013.64 | 3015.99 | 3013.64 | 3015.51 | 100.76 | 303771.73 |
-| 2024-05-01 00:00:51 | 2024-05-01 00:01:05 | 263 | 3015.51 | 3017.35 | 3015.51 | 3017.35 | 100.31 | 302542.98 |
-| 2024-05-01 00:01:05 | 2024-05-01 00:02:02 | 454 | 3017.40 | 3019.69 | 3017.21 | 3017.21 | 100.72 | 303975.74 |
-| 2024-05-01 00:02:02 | 2024-05-01 00:02:06 | 140 | 3017.21 | 3017.21 | 3016.11 | 3016.23 | 100.69 | 303748.05 |
-| 2024-05-01 00:02:06 | 2024-05-01 00:02:40 | 309 | 3016.21 | 3016.68 | 3013.05 | 3013.06 | 104.58 | 315322.51 |
-
 ### Equi-money
 
 ![Equi-money chart](./readme/ETHUSDT@Binance(t)%20money@600000.svg)
-
-| Time start | Time end | Ticks | Open | High | Low | Close | Volume | Money |
-| ---------- | -------- | ----- | ---- | ---- | --- | ----- | ------ | ----- |
-| 2024-05-01 00:00:00 | 2024-05-01 00:00:42 | 512 | 3014.04 | 3014.79 | 3013.31 | 3013.59 | 199.18 | 600321.69 |
-| 2024-05-01 00:00:42 | 2024-05-01 00:01:04 | 386 | 3013.59 | 3016.83 | 3013.59 | 3016.18 | 199.01 | 600091.59 |
-| 2024-05-01 00:01:04 | 2024-05-01 00:02:06 | 629 | 3016.18 | 3019.69 | 3016.11 | 3016.53 | 198.90 | 600145.57 |
-| 2024-05-01 00:02:06 | 2024-05-01 00:02:45 | 480 | 3016.49 | 3016.68 | 3012.40 | 3012.40 | 199.07 | 600061.72 |
-| 2024-05-01 00:02:45 | 2024-05-01 00:04:57 | 914 | 3012.40 | 3015.41 | 3012.00 | 3013.53 | 199.52 | 601233.10 |
-| 2024-05-01 00:04:57 | 2024-05-01 00:05:52 | 493 | 3013.53 | 3016.71 | 3013.01 | 3016.71 | 200.80 | 605440.33 |
-| 2024-05-01 00:05:52 | 2024-05-01 00:06:31 | 687 | 3016.75 | 3017.33 | 3014.65 | 3015.36 | 199.13 | 600630.51 |
 
 ## Feature engineering
 
@@ -325,16 +285,46 @@ Below we inspect how we can encode, scale, and normalize our `features`.
 
 Raw price values are not good for machine learning models, as they don't satisfy `i.i.d.` criteria.
 
+For instance, let's look at ETHUSDT 6h klines.
+
+![Price chart](./readme/raw-price/ETHUSDT@Binance(k)%20time@21600%20raw%20price.svg)
+
+The prices are strongly correlated.
+
+![Price correlation](./readme/raw-price/ETHUSDT@Binance(k)%20time@21600%20raw%20price%20corr.svg)
+
+The price distributions are:
+
+| open | high | low | close |
+| --- | --- | --- | --- |
+| ![open](./readme/raw-price/ETHUSDT@Binance(k)%20time@21600%20raw%20price%20distr%20open.svg) | ![high](./readme/raw-price/ETHUSDT@Binance(k)%20time@21600%20raw%20price%20distr%20high.svg) | ![low](./readme/raw-price/ETHUSDT@Binance(k)%20time@21600%20raw%20price%20distr%20low.svg) | ![close](./readme/raw-price/ETHUSDT@Binance(k)%20time@21600%20raw%20price%20distr%20close.svg) |
+
 ### Using returns instead if raw prices
 
-We can encode all four `open`, `high`, `low` and `close` prices as returns from the previous `close` price.
-![Encoding price as returns from the previous close](./readme/ETHUSDT@Binance(k)%20time@21600%20price%20encoder%20ret.svg)
+We can encode all four `open`, `high`, `low` and `close` prices as returns or as log-returns from the previous `close` price.
+
+![Encoding price as returns from the previous close](./readme/price-enc/ETHUSDT@Binance(k)%20time@21600%20price-enc%20ret.svg)
+
+![Encoding price as log-returns from the previous close](./readme/price-enc/ETHUSDT@Binance(k)%20time@21600%20price-enc%20logret.svg)
+
+It is funny to create candlestick charts based on these returns.
+
+![Candlestick chart of returns](./readme/price-enc/ETHUSDT@Binance(k)%20time@21600%20price-enc%20ret%20candlesticks.svg)
+
+![Candlestick chart of log-returns](./readme/price-enc/ETHUSDT@Binance(k)%20time@21600%20price-enc%20logret%20candlesticks.svg)
 
 The correlation with original prices is shown below.
 
-![Correlation heatmap](./readme/ETHUSDT@Binance(k)%20time@21600%20price%20encoder%20correlation%20ret+p.svg)
+| with price | without price |
+| --- | --- |
+| ![return](./readme/price-enc/ETHUSDT@Binance(k)%20time@21600%20price-enc%20corr%20ret+logret+p.svg) | ![log-return](./readme/price-enc/ETHUSDT@Binance(k)%20time@21600%20price-enc%20corr%20ret+logret.svg) |
 
-![Correlation heatmap](./readme/ETHUSDT@Binance(k)%20time@21600%20price%20encoder%20correlation%20ret.svg)
+Return and log-return distributions:
+
+| open | high | low | close |
+| --- | --- | --- | --- |
+| ![ret-open](./readme/price-enc/ETHUSDT@Binance(k)%20time@21600%20distr%20ret(c)%20open.svg) | ![ret-high](./readme/price-enc/ETHUSDT@Binance(k)%20time@21600%20distr%20ret(c)%20high.svg) | ![ret-low](./readme/price-enc/ETHUSDT@Binance(k)%20time@21600%20distr%20ret(c)%20low.svg) | ![ret-close](./readme/price-enc/ETHUSDT@Binance(k)%20time@21600%20distr%20ret(c)%20close.svg) |
+| ![logret-open](./readme/price-enc/ETHUSDT@Binance(k)%20time@21600%20distr%20logret(c)%20open.svg) | ![logret-high](./readme/price-enc/ETHUSDT@Binance(k)%20time@21600%20distr%20logret(c)%20high.svg) | ![logret-low](./readme/price-enc/ETHUSDT@Binance(k)%20time@21600%20distr%20logret(c)%20low.svg) | ![logret-close](./readme/price-enc/ETHUSDT@Binance(k)%20time@21600%20distr%20logret(c)%20close.svg) |
 
 ### Min-max scaling
 
@@ -354,27 +344,21 @@ This method is very sensitive to the presence of outliers.
 In the following illustration, all four `open`, `high`, `low` and `close`
 were scaled using `minmax` on the window of last 64 prices.
 
-![Scaling price using minmax](./readme/ETHUSDT@Binance(k)%20time@21600%20minmax%20scaling.svg)
+![Scaling price using minmax](./readme/scaler-minmax/ETHUSDT@Binance(k)%20time@21600%20scaler-minmax.svg)
 
-The correlation with original prices is shown below.
+It is interesting to create candlestick charts based on these scaled prices.
 
-![Correlation heatmap](./readme/ETHUSDT@Binance(k)%20time@21600%20minmax%20scaling%20correlation%20with%20price.svg)
+![Minmax candlesticks](./readme/scaler-minmax/ETHUSDT@Binance(k)%20time@21600%20scaler-minmax%20candlesticks.svg)
 
-![Correlation heatmap](./readme/ETHUSDT@Binance(k)%20time@21600%20minmax%20scaling%20correlation.svg)
+Minmax-scaled prices are very correlated with each other and with raw prices.
 
-The distribution of scaled prices in comparison with original ones is:
+![Correlation heatmap](./readme/scaler-minmax/ETHUSDT@Binance(k)%20time@21600%20scaler-minmax%20corr+p.svg)
+
+The distributions of scaled prices are:
 
 | open | high | low | close |
 | --- | --- | --- | --- |
-| ![open](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20open.svg) | ![high](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20high.svg) | ![low](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20low.svg) | ![close](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20close.svg) |
-| ![mmopen](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20minmax(64)%20open.svg) | ![mmhigh](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20minmax(64)%20high.svg) | ![mmlow](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20minmax(64)%20low.svg) | ![mmclose](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20minmax(64)%20close.svg) |
-
-|  | raw | minmax |
-| --- | --- | --- |
-| open | ![open](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20open.svg) | ![minmax open](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20minmax(64)%20open.svg) |
-| high | ![high](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20high.svg) | ![minmax high](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20minmax(64)%20high.svg) |
-| low | ![low](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20low.svg) | ![minmax low](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20minmax(64)%20low.svg) |
-| close | ![close](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20close.svg) | ![minmax close](./readme/ETHUSDT@Binance(k)%20time@21600%20distr%20minmax(64)%20close.svg) |
+| ![mmopen](./readme/scaler-minmax/ETHUSDT@Binance(k)%20time@21600%20distr%20minmax%20open.svg) | ![mmhigh](./readme/scaler-minmax/ETHUSDT@Binance(k)%20time@21600%20distr%20minmax%20high.svg) | ![mmlow](./readme/scaler-minmax/ETHUSDT@Binance(k)%20time@21600%20distr%20minmax%20low.svg) | ![mmclose](./readme/scaler-minmax/ETHUSDT@Binance(k)%20time@21600%20distr%20minmax%20close.svg) |
 
 ### Z-score scaling
 
@@ -388,6 +372,25 @@ This method cannot guarantee balanced feature scales in the presence of outliers
 
 Also, the rescaled data doesn't fit into [-1, 1] interval.
 
+In the following illustration, all four `open`, `high`, `low` and `close`
+were scaled using `Z-score` on the window of last 64 prices.
+
+![Scaling price using zscore](./readme/scaler-zscore/ETHUSDT@Binance(k)%20time@21600%20scaler-zscore.svg)
+
+It is interesting to create candlestick charts based on these scaled prices.
+
+![Zscore candlesticks](./readme/scaler-zscore/ETHUSDT@Binance(k)%20time@21600%20scaler-zscore%20candlesticks.svg)
+
+Z-score-scaled prices are very correlated with each other and with raw prices.
+
+![Correlation heatmap](./readme/scaler-zscore/ETHUSDT@Binance(k)%20time@21600%20scaler-zscore%20corr+p.svg)
+
+The distributions of scaled prices are:
+
+| open | high | low | close |
+| --- | --- | --- | --- |
+| ![zopen](./readme/scaler-zscore/ETHUSDT@Binance(k)%20time@21600%20distr%20zscore%20open.svg) | ![zhigh](./readme/scaler-zscore/ETHUSDT@Binance(k)%20time@21600%20distr%20zscore%20high.svg) | ![zlow](./readme/scaler-zscore/ETHUSDT@Binance(k)%20time@21600%20distr%20zscore%20low.svg) | ![zclose](./readme/scaler-zscore/ETHUSDT@Binance(k)%20time@21600%20distr%20zscore%20close.svg) |
+
 ### Robust scaling
 
 The [Robust](https://en.wikipedia.org/wiki/Robust_measures_of_scale)
@@ -396,7 +399,69 @@ The *IQR* is the range between the 1st quartile (25th quantile) and the 3rd quar
 
 Since this method is based on percentiles, it is not influenced by a small number of large outliers.
 
-### Time
+In the following illustration, all four `open`, `high`, `low` and `close`
+were scaled using `robust` on the window of last 64 prices.
+
+![Scaling price using robust](./readme/scaler-robust/ETHUSDT@Binance(k)%20time@21600%20scaler-robust.svg)
+
+It is interesting to create candlestick charts based on these scaled prices.
+
+![Robust candlesticks](./readme/scaler-robust/ETHUSDT@Binance(k)%20time@21600%20scaler-robust%20candlesticks.svg)
+
+Robust-scaled prices are very correlated with each other and with raw prices.
+
+![Correlation heatmap](./readme/scaler-robust/ETHUSDT@Binance(k)%20time@21600%20scaler-robust%20corr+p.svg)
+
+The distributions of scaled prices are:
+
+| open | high | low | close |
+| --- | --- | --- | --- |
+| ![ropen](./readme/scaler-robust/ETHUSDT@Binance(k)%20time@21600%20distr%20robust%20open.svg) | ![rhigh](./readme/scaler-robust/ETHUSDT@Binance(k)%20time@21600%20distr%20robust%20high.svg) | ![rlow](./readme/scaler-robust/ETHUSDT@Binance(k)%20time@21600%20distr%20robust%20low.svg) | ![rclose](./readme/scaler-robust/ETHUSDT@Binance(k)%20time@21600%20distr%20robust%20close.svg) |
+
+### OHLC ratios
+
+In the following illustration, we show these ratios created from `open`, `high`, `low` and `close` prices.
+
+![Ohlc ratios](./readme/ohlc-ratios/ETHUSDT@Binance(k)%20time@21600%20ohlc-ratios.svg)
+
+The ratios are not very correlated with raw prices.
+
+![Correlation heatmap](./readme/ohlc-ratios/ETHUSDT@Binance(k)%20time@21600%20ohlc-ratios%20corr+p.svg)
+
+The distributions of ratios are:
+
+| o-l / h-l | c-l / h-l |
+| --- | --- |
+| ![olhl](./readme/ohlc-ratios/ETHUSDT@Binance(k)%20time@21600%20distr%20ol_hl.svg) | ![clhl](./readme/ohlc-ratios/ETHUSDT@Binance(k)%20time@21600%20distr%20cl_hl.svg) |
+
+### Technical analysis indicators
+
+Here we try several common indicators created from `open`, `high`, `low` and `close` prices.
+
+They are `efficiency ratio`, `market dimension`, `fractal dimension`, `stochastic oscillator`
+and `Chaikin money flow`.
+
+![effrati-chart](./readme/ta-1/ETHUSDT@Binance(k)%20time@21600%20ta-1%20effrati.svg)
+
+![markdim-chart](./readme/ta-1/ETHUSDT@Binance(k)%20time@21600%20ta-1%20markdim.svg)
+
+![fracdim-chart](./readme/ta-1/ETHUSDT@Binance(k)%20time@21600%20ta-1%20fracdim.svg)
+
+![stoch-chart](./readme/ta-1/ETHUSDT@Binance(k)%20time@21600%20ta-1%20stoch.svg)
+
+![cmf-chart](./readme/ta-1/ETHUSDT@Binance(k)%20time@21600%20ta-1%20cmf.svg)
+
+The correlatin heatmap:
+
+![Correlation heatmap](./readme/ta-1/ETHUSDT@Binance(k)%20time@21600%20ta-1%20corr+p.svg)
+
+The distributions are:
+
+| effrati | fracdim | markdim | stoch | cmf |
+| --- | --- | --- | --- | --- |
+| ![effrati](./readme/ta-1/ETHUSDT@Binance(k)%20time@21600%20distr%20effrati.svg) | ![fracdim](./readme/ta-1/ETHUSDT@Binance(k)%20time@21600%20distr%20fracdim.svg) | ![markdim](./readme/ta-1/ETHUSDT@Binance(k)%20time@21600%20distr%20markdim.svg) | ![stoch](./readme/ta-1/ETHUSDT@Binance(k)%20time@21600%20distr%20stoch.svg) | ![cmf](./readme/ta-1/ETHUSDT@Binance(k)%20time@21600%20distr%20cmf.svg) |
+
+## Time
 
 Machine Learning models can't efficiently utilize raw timestamp values.
 
@@ -414,46 +479,16 @@ for models to use it.
 - `time of day` in [0,1], where 0 is *00:00:00*, 1 is *23:59:59*
 
 Below is the chart showing encoded time.
-![Time encoding chart](./readme/ETHUSDT@Binance(k)%20time@21600%20time%20encoder.svg)
-
-You can explore the encoded values in the table below.
-
-| time start | time end | yday time start | wday time start | tday time start | yday time end | wday time end | tday time end |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| 2024-03-05 00:00:00 | 2024-03-05 06:00:00 | 0.17 | 0.29 | 0.00 | 0.17 | 0.29 | 0.25 |
-| 2024-03-05 06:00:00 | 2024-03-05 12:00:00 | 0.17 | 0.29 | 0.25 | 0.17 | 0.29 | 0.50 |
-| 2024-03-05 12:00:00 | 2024-03-05 18:00:00 | 0.17 | 0.29 | 0.50 | 0.17 | 0.29 | 0.75 |
-| 2024-03-05 18:00:00 | 2024-03-06 00:00:00 | 0.17 | 0.29 | 0.75 | 0.18 | 0.43 | 0.00 |
-| 2024-03-06 00:00:00 | 2024-03-06 06:00:00 | 0.18 | 0.43 | 0.00 | 0.18 | 0.43 | 0.25 |
-| 2024-03-06 06:00:00 | 2024-03-06 12:00:00 | 0.18 | 0.43 | 0.25 | 0.18 | 0.43 | 0.50 |
-| 2024-03-06 12:00:00 | 2024-03-06 18:00:00 | 0.18 | 0.43 | 0.50 | 0.18 | 0.43 | 0.75 |
-| 2024-03-06 18:00:00 | 2024-03-07 00:00:00 | 0.18 | 0.43 | 0.75 | 0.18 | 0.57 | 0.00 |
-| 2024-03-07 00:00:00 | 2024-03-07 06:00:00 | 0.18 | 0.57 | 0.00 | 0.18 | 0.57 | 0.25 |
-| 2024-03-07 06:00:00 | 2024-03-07 12:00:00 | 0.18 | 0.57 | 0.25 | 0.18 | 0.57 | 0.50 |
-| 2024-03-07 12:00:00 | 2024-03-07 18:00:00 | 0.18 | 0.57 | 0.50 | 0.18 | 0.57 | 0.75 |
-| 2024-03-07 18:00:00 | 2024-03-08 00:00:00 | 0.18 | 0.57 | 0.75 | 0.18 | 0.71 | 0.00 |
-| 2024-03-08 00:00:00 | 2024-03-08 06:00:00 | 0.18 | 0.71 | 0.00 | 0.18 | 0.71 | 0.25 |
-| 2024-03-08 06:00:00 | 2024-03-08 12:00:00 | 0.18 | 0.71 | 0.25 | 0.18 | 0.71 | 0.50 |
-| 2024-03-08 12:00:00 | 2024-03-08 18:00:00 | 0.18 | 0.71 | 0.50 | 0.18 | 0.71 | 0.75 |
-| 2024-03-08 18:00:00 | 2024-03-09 00:00:00 | 0.18 | 0.71 | 0.75 | 0.19 | 0.86 | 0.00 |
-| 2024-03-09 00:00:00 | 2024-03-09 06:00:00 | 0.19 | 0.86 | 0.00 | 0.19 | 0.86 | 0.25 |
-| 2024-03-09 06:00:00 | 2024-03-09 12:00:00 | 0.19 | 0.86 | 0.25 | 0.19 | 0.86 | 0.50 |
-| 2024-03-09 12:00:00 | 2024-03-09 18:00:00 | 0.19 | 0.86 | 0.50 | 0.19 | 0.86 | 0.75 |
-| 2024-03-09 18:00:00 | 2024-03-10 00:00:00 | 0.19 | 0.86 | 0.75 | 0.19 | 1.00 | 0.00 |
-| 2024-03-10 00:00:00 | 2024-03-10 06:00:00 | 0.19 | 1.00 | 0.00 | 0.19 | 1.00 | 0.25 |
-| 2024-03-10 06:00:00 | 2024-03-10 12:00:00 | 0.19 | 1.00 | 0.25 | 0.19 | 1.00 | 0.50 |
-| 2024-03-10 12:00:00 | 2024-03-10 18:00:00 | 0.19 | 1.00 | 0.50 | 0.19 | 1.00 | 0.75 |
-| 2024-03-10 18:00:00 | 2024-03-11 00:00:00 | 0.19 | 1.00 | 0.75 | 0.19 | 0.14 | 0.00 |
-| 2024-03-11 00:00:00 | 2024-03-11 06:00:00 | 0.19 | 0.14 | 0.00 | 0.19 | 0.14 | 0.25 |
-| 2024-03-11 06:00:00 | 2024-03-11 12:00:00 | 0.19 | 0.14 | 0.25 | 0.19 | 0.14 | 0.50 |
-| 2024-03-11 12:00:00 | 2024-03-11 18:00:00 | 0.19 | 0.14 | 0.50 | 0.19 | 0.14 | 0.75 |
-| 2024-03-11 18:00:00 | 2024-03-12 00:00:00 | 0.19 | 0.14 | 0.75 | 0.19 | 0.29 | 0.00 |
-| 2024-03-12 00:00:00 | 2024-03-12 06:00:00 | 0.19 | 0.29 | 0.00 | 0.19 | 0.29 | 0.25 |
-| 2024-03-12 06:00:00 | 2024-03-12 12:00:00 | 0.19 | 0.29 | 0.25 | 0.19 | 0.29 | 0.50 |
-| 2024-03-12 12:00:00 | 2024-03-12 18:00:00 | 0.19 | 0.29 | 0.50 | 0.19 | 0.29 | 0.75 |
+![Time encoding chart](./readme/time-enc/ETHUSDT@Binance(k)%20time@21600%20time%20enc.svg)
 
 The correlation heatmap looks like this.
-![Correlation heatmap](./readme/ETHUSDT@Binance(k)%20time@21600%20time%20encoder%20correlation.svg)
+![Correlation heatmap](./readme/time-enc/ETHUSDT@Binance(k)%20time@21600%20time%20enc%20corr+p.svg)
+
+The distributions are:
+
+| tday | wday | yday |
+| --- | --- | --- |
+| ![tday](./readme/time-enc/ETHUSDT@Binance(k)%20time@21600%20distr%20tday.svg) | ![wday](./readme/time-enc/ETHUSDT@Binance(k)%20time@21600%20distr%20wday.svg) | ![yday](./readme/time-enc/ETHUSDT@Binance(k)%20time@21600%20distr%20yday.svg) |
 
 ## Data sources
 

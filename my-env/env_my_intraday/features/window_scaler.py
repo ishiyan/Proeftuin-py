@@ -17,11 +17,10 @@ class WindowScaler(Feature):
     Scales a window of the historical prices, and copies scaled
     prices to the output.
 
-    Scaling methods are:
+    The scaling methods are:
     - `raw`: take raw value
     - `minmax`: `z = (x - min) / (max - min)`
-    - `standard`: `z = (x - u) / 𝜎`
-    - `z-score`: `z = (x - u) / 𝜎`
+    - `zscore`: `z = (x - u) / 𝜎`
     - `robust`: `z = (x - median) / IQR`
 
     The scaling window size is specified via `scaling_period` argument and defaults to 64.
@@ -53,8 +52,15 @@ class WindowScaler(Feature):
         Args:
             source str or Sequence[str]:
                 Names of Frame's attributes to encode.
-            method str {'raw', 'minmax', 'standard'}:
+            method str {'raw', 'minmax', 'zscore', 'robust'}:
                 Name of method to use for encoding.
+
+                The scaling methods are:
+
+                `raw`: take raw value
+                `minmax`: `z = (x - min) / (max - min)`
+                `zscore`: `z = (x - u) / 𝜎`
+                `robust`: `z = (x - median) / IQR`
             base str or None:
                 Name of Frame's attribute to be used as a previous price value.
                 
@@ -80,8 +86,8 @@ class WindowScaler(Feature):
         """
         
         if not isinstance(method, str) or method not in [
-            'raw', 'minmax', 'z-score', 'robust']:
-            raise ValueError(f"method {method} should be one of 'raw', 'minmax', 'z-score', 'robust'")
+            'raw', 'minmax', 'zscore', 'robust']:
+            raise ValueError(f"method {method} should be one of 'raw', 'minmax', 'zscore', 'robust'")
         self.method = method
 
         if not isinstance(copy_period, int) or copy_period < 1:
@@ -134,8 +140,8 @@ class WindowScaler(Feature):
         for i, name in enumerate(self.source):
             if self.method == 'minmax':
                 result = self.process_minmax(window, name, self.copy_period)
-            elif self.method == 'standard':
-                result = self.process_standard(window, name, self.copy_period)
+            elif self.method == 'zscore':
+                result = self.process_zscore(window, name, self.copy_period)
             elif self.method == 'robust':
                 result = self.process_robust(window, name, self.copy_period)
             else: # raw
@@ -162,7 +168,7 @@ class WindowScaler(Feature):
         return [(x - lowest) / delta for x in values[-length:]]
     
     @staticmethod
-    def process_standard(frames: Sequence[Frame], source: str, length: int) -> Sequence[float]:
+    def process_zscore(frames: Sequence[Frame], source: str, length: int) -> Sequence[float]:
         values = [getattr(frame, source) for frame in frames]
         mean = sum(values) / len(values)
         variance = sum((x - mean) ** 2 for x in values) / len(values)
