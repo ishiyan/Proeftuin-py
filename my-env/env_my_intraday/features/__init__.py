@@ -9,6 +9,7 @@ from .change import Change
 from .clip import Clip
 from .cmf import CMF
 from .copy import Copy
+from .copy_period import CopyPeriod
 from .cumulative_sum import CumulativeSum
 from .delta import Delta
 from .div import Div

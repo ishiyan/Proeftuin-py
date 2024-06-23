@@ -10,6 +10,11 @@ from env_my_intraday import EMA, Copy, PriceEncoder
 from env_my_intraday import BuySellCloseAction
 from env_my_intraday import BalanceReward
 from env_my_intraday import Environment
+from env_my_intraday import BuySellHoldCloseAction
+from env_my_intraday import OhlcRatios
+from env_my_intraday import TimeEncoder
+from env_my_intraday import WindowScaler
+from env_my_intraday import BalanceReturnReward
 
 # --------------------------------- data
 #symbol = 'BTCEUR'
@@ -40,15 +45,20 @@ aggregator = IntervalTradeAggregator(method='time', interval=1*60, duration=(1, 
 
 # --------------------------------- features, actions, reward
 period = 100
-atr_name = f'ema_{period}_true_range'
+#atr_name = f'ema_{period}_true_range'
 features_pipeline = [
-    PriceEncoder(source='close', write_to='both'),
-    EMA(period=period, source='true_range', write_to='frame'),
-    Copy(source=['volume'])
+    WindowScaler(source=['open', 'high', 'low', 'close', 'volume'], method='zscore',
+        scale_period=64, copy_period=1, write_to='state'),
+    OhlcRatios(write_to='state'),
+    TimeEncoder(source=['time_start'], yday=True, wday=True, tday=True, write_to='state'),
+
+    #PriceEncoder(source='close', write_to='both'),
+    #EMA(period=period, source='true_range', write_to='frame'),
+    #Copy(source=['volume'])
 ]
 
-action_scheme = BuySellCloseAction()
-reward_scheme = BalanceReward(norm_factor=atr_name)
+action_scheme = BuySellHoldCloseAction()
+reward_scheme = BalanceReturnReward()
 
 # --------------------------------- environment
 env = Environment(
