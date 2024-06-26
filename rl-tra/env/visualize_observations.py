@@ -195,14 +195,15 @@ full_chart_rgb_arrays=[]
 full_corr_rgb_arrays=[]
 episode_chart_rgb_arrays=[]
 episode_corr_rgb_arrays=[]
-durations = []
-for episode in range(100):
+full_durations = []
+episode_durations = []
+for episode in range(50):
     step = 0
     state, frame = env.reset()
     while True:
         step += 1
         print(f'Episode {episode+1}, step {step}')
-        #durations.append(0.3)
+        full_durations.append(1000/3) # In ms
         rgb_array = make_charts(state, episode=episode, step=step, show=False)
         full_chart_rgb_arrays.append(rgb_array)
         #rgb_array = make_correlations(state, episode=episode, step=step, show=False)
@@ -211,7 +212,8 @@ for episode in range(100):
         action = env.action_space.sample()
         state, reward, terminated, truncated, frame = env.step(action)
         if terminated or truncated:
-            #durations.append(2.0)
+            full_durations.append(1000) # In ms
+            episode_durations.append(1000) # In ms
             rgb_array = make_charts(state, episode=episode, step=step, show=False)
             full_chart_rgb_arrays.append(rgb_array)
             episode_chart_rgb_arrays.append(rgb_array)
@@ -222,21 +224,22 @@ for episode in range(100):
 env.close()
 dir = 'visualizations/state_features/'
 
-write_animated_gif(rgb_arrays=full_chart_rgb_arrays, durations=durations, fps=5,
+write_animated_gif(rgb_arrays=full_chart_rgb_arrays, durations_in_ms=full_durations,
     filename=f'full_episodes_state_charts_{SCALE_METHOD}{SCALE_PERIOD}_{TIME_FRAME}_{SYMBOL}.gif',
     dir=dir)
 full_chart_rgb_arrays=None
-write_animated_gif(rgb_arrays=full_corr_rgb_arrays, durations=durations,
+write_animated_gif(rgb_arrays=full_corr_rgb_arrays, durations_in_ms=full_durations,
     filename=f'full_episodes_state_corr_{SCALE_METHOD}{SCALE_PERIOD}_{TIME_FRAME}_{SYMBOL}.gif',
     dir=dir)
 full_corr_rgb_arrays=None
-write_animated_gif(rgb_arrays=episode_chart_rgb_arrays, durations=durations, fps=2,
+write_animated_gif(rgb_arrays=episode_chart_rgb_arrays, durations_in_ms=episode_durations,
     filename=f'end_episodes_state_charts_{SCALE_METHOD}{SCALE_PERIOD}_{TIME_FRAME}_{SYMBOL}.gif',
     dir=dir)
 episode_chart_rgb_arrays=None
-write_animated_gif(rgb_arrays=episode_corr_rgb_arrays, durations=durations,
+write_animated_gif(rgb_arrays=episode_corr_rgb_arrays, durations_in_ms=episode_durations,
     filename=f'end_episodes_state_corr_{SCALE_METHOD}{SCALE_PERIOD}_{TIME_FRAME}_{SYMBOL}.gif',
     dir=dir)
 episode_corr_rgb_arrays=None
-durations=None
+full_durations=None
+episode_durations=None
 #"""

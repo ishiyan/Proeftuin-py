@@ -306,15 +306,15 @@ def fig_to_rgb_array(fig):
     io_buf.close()
     return rgb_array
 
-def write_animated_gif(dir, filename, rgb_arrays, durations, fps=3):
+def write_animated_gif(dir, filename, rgb_arrays, durations_in_ms=[], constant_duration_in_ms=1000/3):
     if len(rgb_arrays) > 0:
         if not os.path.exists(dir):
             os.makedirs(dir)
         if not os.path.exists(dir):
             raise ValueError(f'Cannot create directory {dir}')
-        if len(durations) == 0:
-            imageio.mimwrite(uri=dir+filename, ims=rgb_arrays, fps=fps)
+        if len(durations_in_ms) == 0:
+            imageio.mimwrite(uri=dir+filename, ims=rgb_arrays, duration=constant_duration_in_ms)
         else:
             with imageio.get_writer(dir+filename, mode='I') as writer:
-                for img, duration in zip(rgb_arrays, durations):
+                for img, duration in zip(rgb_arrays, durations_in_ms):
                     writer.append_data(img, {'duration': duration})
