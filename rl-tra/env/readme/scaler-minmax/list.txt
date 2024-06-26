@@ -1,0 +1,24 @@
+scaler-minmax/dark
+scaler-minmax/light
+---------------------------
+ETHUSDT@Binance(k) time@21600 scaler-minmax.svg
+ETHUSDT@Binance(k) time@21600 scaler-minmax candlesticks.svg
+
+ETHUSDT@Binance(k) time@21600 scaler-minmax corr+p.svg
+ETHUSDT@Binance(k) time@21600 scaler-minmax corr.svg
+
+ETHUSDT@Binance(k) time@21600 distr minmax close.svg
+ETHUSDT@Binance(k) time@21600 distr minmax high.svg
+ETHUSDT@Binance(k) time@21600 distr minmax low.svg
+ETHUSDT@Binance(k) time@21600 distr minmax open.svg
+---------------------------
+./readme/scaler-minmax/ETHUSDT@Binance(k)%20time@21600%20scaler-minmax.svg
+./readme/scaler-minmax/ETHUSDT@Binance(k)%20time@21600%20scaler-minmax%20candlesticks.svg
+
+./readme/scaler-minmax/ETHUSDT@Binance(k)%20time@21600%20scaler-minmax%20corr+p.svg
+./readme/scaler-minmax/ETHUSDT@Binance(k)%20time@21600%20scaler-minmax%20corr.svg
+
+./readme/scaler-minmax/ETHUSDT@Binance(k)%20time@21600%20distr%20minmax%20close.svg
+./readme/scaler-minmax/ETHUSDT@Binance(k)%20time@21600%20distr%20minmax%20high.svg
+./readme/scaler-minmax/ETHUSDT@Binance(k)%20time@21600%20distr%20minmax%20low.svg
+./readme/scaler-minmax/ETHUSDT@Binance(k)%20time@21600%20distr%20minmax%20open.svg

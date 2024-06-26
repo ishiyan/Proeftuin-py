@@ -1,0 +1,21 @@
+time-enc\dark
+time-enc\light
+-----------------
+ETHUSDT@Binance(k) time@21600 time enc.svg
+
+ETHUSDT@Binance(k) time@21600 time enc corr+p.svg
+ETHUSDT@Binance(k) time@21600 time enc corr.svg
+
+ETHUSDT@Binance(k) time@21600 distr tday.svg
+ETHUSDT@Binance(k) time@21600 distr wday.svg
+ETHUSDT@Binance(k) time@21600 distr yday.svg
+-----------------
+./readme/time-enc/ETHUSDT@Binance(k)%20time@21600%20time%20enc.svg
+
+./readme/time-enc/ETHUSDT@Binance(k)%20time@21600%20time%20enc%20corr+p.svg
+./readme/time-enc/ETHUSDT@Binance(k)%20time@21600%20time%20enc%20corr.svg
+
+./readme/time-enc/ETHUSDT@Binance(k)%20time@21600%20distr%20tday.svg
+./readme/time-enc/ETHUSDT@Binance(k)%20time@21600%20distr%20wday.svg
+./readme/time-enc/ETHUSDT@Binance(k)%20time@21600%20distr%20yday.svg
+

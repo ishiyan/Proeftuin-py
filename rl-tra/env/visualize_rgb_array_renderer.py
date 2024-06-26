@@ -1,0 +1,98 @@
+from datetime import date, timedelta
+import imageio
+from matplotlib import pyplot as plt
+
+from environment import BinanceMonthlyKlines1mToTradesProvider
+from environment import BinanceMonthlyTradesProvider
+from environment import SineTradesProvider
+from environment import IntervalTradeAggregator
+from environment import EMA, Copy, PriceEncoder
+from environment import BuySellCloseAction
+from environment import BalanceReward
+from environment import Environment
+from environment import BuySellHoldCloseAction
+from environment import OhlcRatios
+from environment import TimeEncoder
+from environment import WindowScaler
+from environment import BalanceReturnReward
+
+# --------------------------------- data
+#symbol = 'BTCEUR'
+#symbol = 'ETHUSDT'
+symbol = 'BTCUSDT'
+
+#WHAT = 'binance-klines'
+#WHAT = 'binance-trades'
+WHAT = 'sine'
+
+if WHAT == 'binance-klines':
+    dir = 'data/binance_monthly_klines/'
+    provider = BinanceMonthlyKlines1mToTradesProvider(data_dir = dir, symbol = symbol,
+                        date_from = date(2024, 1, 1), date_to = date(2024, 5, 31))
+elif WHAT == 'binance-trades':
+    dir = 'D:/data/binance_monthly_trades/'
+    provider = BinanceMonthlyTradesProvider(data_dir = dir, symbol = symbol,
+                        #date_from = date(2024, 5, 1), date_to = date(2024, 5, 31))
+                        date_from = date(2018, 5, 1), date_to=date(2018, 5, 31))
+elif WHAT == 'sine':
+    provider = SineTradesProvider(mean = 100, amplitude = 90, SNRdb = 15,
+                    period=(timedelta(minutes=10), timedelta(minutes=30)),
+                    date_from = date(2024, 5, 1), date_to = date(2024, 5, 31))
+else:
+    raise ValueError('Unknown WHAT')
+
+aggregator = IntervalTradeAggregator(method='time', interval=1*60, duration=(1, 8*60*60))
+
+# --------------------------------- features, actions, reward
+period = 100
+#atr_name = f'ema_{period}_true_range'
+features_pipeline = [
+    WindowScaler(source=['open', 'high', 'low', 'close', 'volume'], method='zscore',
+        scale_period=64, copy_period=1, write_to='state'),
+    OhlcRatios(write_to='state'),
+    TimeEncoder(source=['time_start'], yday=True, wday=True, tday=True, write_to='state'),
+
+    #PriceEncoder(source='close', write_to='both'),
+    #EMA(period=period, source='true_range', write_to='frame'),
+    #Copy(source=['volume'])
+]
+
+action_scheme = BuySellHoldCloseAction()
+reward_scheme = BalanceReturnReward()
+
+# --------------------------------- environment
+env = Environment(
+    provider=provider,
+    aggregator=aggregator,
+    features_pipeline=features_pipeline,
+    action_scheme=action_scheme,
+    reward_scheme=reward_scheme,
+    warm_up_duration=None,
+    episode_max_duration=None,#2*60*60,
+    #render_mode='rgb_array',
+    initial_balance=10000, #1000000
+    episode_max_steps=197
+)
+
+# --------------------------------- loop
+frames=[]
+for i in range(1):
+    state, frame = env.reset()
+    #rgb_array = env.render(mode='rgb_array')
+    #frames = [rgb_array]
+    while True:
+        #env.render('human')
+        #rgb_array = env.render(mode='rgb_array')
+        #frames.append(rgb_array)
+        #print(state)
+        action = env.action_space.sample()
+        #action = action_scheme.get_random_action()
+        state, reward, terminated, truncated, frame = env.step(action)
+        if terminated or truncated:
+            rgb_array = env.render(mode='rgb_array')
+            frames.append(rgb_array)
+            break
+plt.show() 
+env.close()
+#imageio.mimwrite(uri='random_agent_steps.gif', ims=frames, fps=3) # os.path.join('./videos/', 'random_agent.gif')
+plt.close()

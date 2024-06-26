@@ -1,0 +1,36 @@
+ta-1/dark
+ta-1/light
+-----------------------------------
+ETHUSDT@Binance(k) time@21600 ta-1.svg
+
+ETHUSDT@Binance(k) time@21600 ta-1 effrati.svg
+ETHUSDT@Binance(k) time@21600 ta-1 markdim.svg
+ETHUSDT@Binance(k) time@21600 ta-1 fracdim.svg
+ETHUSDT@Binance(k) time@21600 ta-1 stoch.svg
+ETHUSDT@Binance(k) time@21600 ta-1 cmf.svg
+
+ETHUSDT@Binance(k) time@21600 ta-1 corr+p.svg
+ETHUSDT@Binance(k) time@21600 ta-1 corr.svg
+
+ETHUSDT@Binance(k) time@21600 distr cmf.svg
+ETHUSDT@Binance(k) time@21600 distr effrati.svg
+ETHUSDT@Binance(k) time@21600 distr fracdim.svg
+ETHUSDT@Binance(k) time@21600 distr markdim.svg
+ETHUSDT@Binance(k) time@21600 distr stoch.svg
+-----------------------------------
+./readme/ta-1/ETHUSDT@Binance(k)%20time@21600%20ta-1.svg
+
+./readme/ta-1/ETHUSDT@Binance(k)%20time@21600%20ta-1%20effrati.svg
+./readme/ta-1/ETHUSDT@Binance(k)%20time@21600%20ta-1%20markdim.svg
+./readme/ta-1/ETHUSDT@Binance(k)%20time@21600%20ta-1%20fracdim.svg
+./readme/ta-1/ETHUSDT@Binance(k)%20time@21600%20ta-1%20stoch.svg
+./readme/ta-1/ETHUSDT@Binance(k)%20time@21600%20ta-1%20cmf.svg
+
+./readme/ta-1/ETHUSDT@Binance(k)%20time@21600%20ta-1%20corr+p.svg
+./readme/ta-1/ETHUSDT@Binance(k)%20time@21600%20ta-1%20corr.svg
+
+./readme/ta-1/ETHUSDT@Binance(k)%20time@21600%20distr%20cmf.svg
+./readme/ta-1/ETHUSDT@Binance(k)%20time@21600%20distr%20effrati.svg
+./readme/ta-1/ETHUSDT@Binance(k)%20time@21600%20distr%20fracdim.svg
+./readme/ta-1/ETHUSDT@Binance(k)%20time@21600%20distr%20markdim.svg
+./readme/ta-1/ETHUSDT@Binance(k)%20time@21600%20distr%20stoch.svg

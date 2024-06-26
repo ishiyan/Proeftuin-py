@@ -1,0 +1,24 @@
+scaler-robust/dark
+scaler-robust/light
+------------------------------------
+ETHUSDT@Binance(k) time@21600 scaler-robust.svg
+ETHUSDT@Binance(k) time@21600 scaler-robust candlesticks.svg
+
+ETHUSDT@Binance(k) time@21600 scaler-robust corr+p.svg
+ETHUSDT@Binance(k) time@21600 scaler-robust corr.svg
+
+ETHUSDT@Binance(k) time@21600 distr robust close.svg
+ETHUSDT@Binance(k) time@21600 distr robust high.svg
+ETHUSDT@Binance(k) time@21600 distr robust low.svg
+ETHUSDT@Binance(k) time@21600 distr robust open.svg
+------------------------------------
+./readme/scaler-robust/ETHUSDT@Binance(k)%20time@21600%20scaler-robust.svg
+./readme/scaler-robust/ETHUSDT@Binance(k)%20time@21600%20scaler-robust%20candlesticks.svg
+
+./readme/scaler-robust/ETHUSDT@Binance(k)%20time@21600%20scaler-robust%20corr+p.svg
+./readme/scaler-robust/ETHUSDT@Binance(k)%20time@21600%20scaler-robust%20corr.svg
+
+./readme/scaler-robust/ETHUSDT@Binance(k)%20time@21600%20distr%20robust%20close.svg
+./readme/scaler-robust/ETHUSDT@Binance(k)%20time@21600%20distr%20robust%20high.svg
+./readme/scaler-robust/ETHUSDT@Binance(k)%20time@21600%20distr%20robust%20low.svg
+./readme/scaler-robust/ETHUSDT@Binance(k)%20time@21600%20distr%20robust%20open.svg
