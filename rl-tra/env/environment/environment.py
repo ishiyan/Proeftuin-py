@@ -535,5 +535,5 @@ class Environment(Broker, gym.Env):
         if self.renderer is not None:
             self.renderer.close()
 
-    def render(self, mode: Optional[str]) -> Optional[Union[str, np.array]]:
+    def render(self, mode: Optional[str]=None) -> Optional[Union[str, np.array]]:
         return self.renderer.render() if self.renderer is not None else None

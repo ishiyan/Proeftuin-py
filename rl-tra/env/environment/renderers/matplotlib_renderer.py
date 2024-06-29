@@ -1,5 +1,4 @@
 import io
-from time import perf_counter
 from numbers import Real
 from typing import Optional
 
@@ -44,6 +43,7 @@ class MatplotlibRenderer(Renderer):
     def __init__(self,
         dpi=120, # 96, 120
         colors = GREENS_DARK):
+
         self.dpi = dpi # DPI to render the figure
         self.colors = colors
 
