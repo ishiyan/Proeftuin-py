@@ -99,7 +99,7 @@ env = RecordAnimatedGIF(
     env,
     output_folder='./visualizations/random_agent/',
     name_prefix=f'random_agent_{SCALE_METHOD}{SCALE_PERIOD}_{TIME_FRAME}_{SYMBOL}',
-    max_gif_frames=1000,
+    max_gif_frames=100000,
     record_episodes_end=True,
     record_episodes_steps=True,
     record_episodes_delta=1,
@@ -109,7 +109,7 @@ env = RecordAnimatedGIF(
     fps_episode_step=3,
 )
 # --------------------------------- loop
-for episode in range(4):
+for episode in range(10):
     step = 0
     state, frame = env.reset()
     while True:

@@ -199,7 +199,6 @@ class RecordAnimatedGIF(
         if len(self.recorded_episode_frames) > 0:
             iio.mimsave(uri=path, ims=self.recorded_episode_frames, fps=self.fps_episode, loop=0, subrectangles=True)
             self.recorded_episode_frames = []
-            self.duration_episode_frames = []
         self.animation_first_episode = NOTSET
         self.animation_last_episode = NOTSET
 
@@ -210,10 +209,8 @@ class RecordAnimatedGIF(
         path = os.path.join(self.output_folder, name)
         print(f'Flushing {len(self.recorded_step_frames)} steps to: {path}')
         if len(self.recorded_step_frames) > 0:
-            path = os.path.join(self.output_folder, name)
             iio.mimsave(uri=path, ims=self.recorded_step_frames, fps=self.fps_step, loop=0, subrectangles=True)
             self.recorded_step_frames = []
-            self.duration_step_frames = []
         self.animation_step_first_episode = NOTSET
         self.animation_step_first = NOTSET
         self.animation_step_last_episode = NOTSET

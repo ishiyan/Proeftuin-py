@@ -118,7 +118,7 @@ class MatplotlibRenderer(Renderer):
         self._append_step(frame, 0)
 
     def step(self, frame: Frame, reward: Real):
-        self.total_reward += reward
+        #self.total_reward += reward # Already done in _append_step
         self.current_step += 1
         self._append_step(frame, reward)
 
@@ -173,7 +173,6 @@ class MatplotlibRenderer(Renderer):
         # If you want to change index to datetime, use the second line below.
         self.df.loc[len(self.df)] = row # Only use with a RangeIndex!
         #pd.concat([self.df, pd.DataFrame(data=row, columns=self.df_columns)], ignore_index=True)
-
 
     def _plot_title(self, ax):
         row = self.df.iloc[-1]

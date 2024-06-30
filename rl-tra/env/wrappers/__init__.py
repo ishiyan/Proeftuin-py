@@ -1,2 +1,3 @@
 from .record_animated_gif_wrapper import RecordAnimatedGIF
 from .human_rendering_wrapper import HumanRendering
+from .csv_logger_wrapper import CsvFileLogger
