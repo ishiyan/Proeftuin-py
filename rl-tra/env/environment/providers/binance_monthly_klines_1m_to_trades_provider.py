@@ -234,6 +234,15 @@ class BinanceMonthlyKlines1mToTradesProvider(BarToTradeConverter):
                     raise StopIteration('no more files')
                 file_month = self.months[file_index]
                 file_name = self.files[file_month]
+            #elif seek == 'loop':
+            #    if self._file_index is None:
+            #        file_index = 0
+            #    else:
+            #        file_index = self._file_index + 1
+            #    if file_index >= len(self.files):
+            #        file_index = 0
+            #    file_month = self.months[file_index]
+            #    file_name = self.files[file_month]
             else:
                 raise ValueError('seek must be one of: '
                                  '{"first", "next", "last"}')        

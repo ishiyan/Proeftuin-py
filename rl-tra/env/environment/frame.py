@@ -235,6 +235,32 @@ class Frame(object):
             return NotImplemented
         return self.__dict__ != other.__dict__
 
+    def __setattr__(self, name, value):
+        # This method allows setting arbitrary attributes on an instance of Frame.
+        self.__dict__[name] = value
+
+    def __setitem__(self, key, value):
+        # This method allows item assignment.
+        setattr(self, key, value)
+
+    def __getitem__(self, key):
+        # This method allows getting an attribute using the object["key"] syntax.
+        try:
+            return getattr(self, key)
+        except AttributeError as e:
+            raise KeyError(key) from e
+
+    def __delitem__(self, key):
+        # This method allows deleting an attribute using the del object["key"] syntax.
+        try:
+            delattr(self, key)
+        except AttributeError as e:
+            raise KeyError(key) from e
+    
+    def get(self, key, default=None):
+        # This method mimics the dictionary get method.
+        return getattr(self, key, default)
+    
     def update(self, trades: Sequence[Union[Trade, TradeOI]]):
         """
         Updates frame using new trade.

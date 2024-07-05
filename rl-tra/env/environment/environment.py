@@ -340,12 +340,15 @@ class Environment(Broker, gym.Env):
         else:
             if self.provider is not None:
                 self.provider.close()
-            self.provider = self.rng.choice(self.providers)
+            idx = int(self.np_random.uniform(0, len(self.providers)))
+            self.provider = self.providers[idx]
 
         # Initialize provider for a random or specified date (any other behavior is encoded in **kwargs).
         self.episode_start_datetime = self.provider.reset(
             episode_start_datetime = None,
-            episode_min_duration = None,
+            episode_min_duration = \
+                self.episode_max_duration.total_seconds() + \
+                self.warm_up_duration.total_seconds(),
             rng = self.rng) + self.warm_up_duration
 
         # Reset span time.
