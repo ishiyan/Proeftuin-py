@@ -93,11 +93,12 @@ env = Environment(
     episode_max_duration=None,
     render_mode='rgb_array',
     initial_balance=10000,
-    episode_max_steps=128#196
+    halt_account_if_negative_balance=False,
+    episode_max_steps=180#128#196
 )
 env = HumanRendering(env)
 # --------------------------------- loop
-for episode in range(4):
+for episode in range(2): #4
     state, frame = env.reset()
     while True:
         action = env.action_space.sample()

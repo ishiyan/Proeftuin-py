@@ -24,7 +24,7 @@ if not os.path.exists(dir):
 callback = SaveOnBestTrainingRewardCallback(
     check_freq=128*50,    
     log_dir=dir,
-    model_name='best_reward_model',
+    model_name=name,
     save_replay_buffer=False,
     verbose=0)
 

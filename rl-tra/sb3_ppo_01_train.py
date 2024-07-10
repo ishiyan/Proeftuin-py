@@ -1,68 +1,82 @@
 import os
-
 from stable_baselines3 import PPO
-from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.evaluation import evaluate_policy
 
-from env import Env01
-from sb3 import SaveOnBestTrainingRewardCallback
+from sb3 import create_single_env01, create_vec_env01, save_evaluation_statistics
+from sb3 import create_save_on_best_training_reward_callback, cleanup_model_env
 
-# https://stable-baselines3.readthedocs.io/en/master/modules/ppo.html
-# https://stable-baselines3.readthedocs.io/en/master/common/evaluation.html
-# https://github.com/DLR-RM/stable-baselines3/issues/597
+name = 'ppo_01_xxx'
+dir = f'./sb3/{name}-new/'
 
-# This takes about 20 gigabytes of space.
-save_replay_buffer=False
-evaluate_every_epoch=True
+start_iteration_number = 1
+total_iterations = 2 #1000
 
-name = 'ppo_01'
-dir = f'./sb3/{name}/'
-if not os.path.exists(dir):
-    os.makedirs(dir, exist_ok=True)
+episode_max_steps = 180
+learn_episodes = 10#1000#10000
 
-# 128 * 50 = every 50th episode
-callback = SaveOnBestTrainingRewardCallback(
-    check_freq=128*50,    
-    log_dir=dir,
-    model_name='best_reward_model',
-    save_replay_buffer=False,
-    verbose=0)
+evaluate_episodes_every_iteration=8 # Set to 0 to disable
+verbose=1
 
-start_epoch_number = 4
-for epoch in range(start_epoch_number, 1000):
-    env = Env01(symbol='ETHUSDT',
-            time_frame='1m',
-            scale_period = 196,
-            copy_period = 196,
-            episode_max_steps=128,
-            render_mode=None)
-    env = Monitor(env, dir+"epoch_"+str(epoch), allow_early_resets=False)
+#save_on_best_training_reward_callback=None
+save_on_best_training_reward_callback=create_save_on_best_training_reward_callback(
+    check_freq=episode_max_steps*5, # 50 = every 50th episode
+    name=name, dir=dir, verbose=0)
 
-    saved_model_path = os.path.join(dir, 'ppo.zip')
-    saved_replay_buffer_path = os.path.join(dir, 'ppo_replay_buffer.pkl')
-
-    if os.path.exists(saved_model_path):
-        model = PPO.load(name, env=env, verbose=1, print_system_info=True)
-        if os.path.exists(saved_replay_buffer_path):
-            model.load_replay_buffer(saved_replay_buffer_path)
-        model.set_random_seed(epoch)
-        model._last_obs = None
+def create_env(which='subproc', iteration: int=1, eval: bool=False):
+    #symbol = 'BTCEUR' if eval else ['ETHUSDT','BTCUSDT']
+    symbol = ['ETHUSDT','BTCUSDT'] # 'BTCEUR' sometimes has no data intervals
+    render='gif' if eval else 'log'
+    if which in ['subproc','dummy']:
+        return create_vec_env01(vec_env=which, symbol=symbol,
+            episode_max_steps=episode_max_steps, name=name, dir=dir,
+            iteration=iteration, eval=eval, render=render,
+            vectorized_render=True, vectorized_monitor=True,
+            max_envs=4, verbose=verbose)
     else:
-        model = PPO('MultiInputPolicy', env,
-            seed=epoch,
-            verbose=1)
+        return create_single_env01(symbol=symbol,
+            episode_max_steps=episode_max_steps, name=name, dir=dir,
+            iteration=iteration, eval=eval, render=render,
+            monitor=True)
 
-    model.learn(total_timesteps=int(128*10000),
-        log_interval=4,
-        callback=callback,
-        reset_num_timesteps = False,
-        progress_bar=True)
- 
-    model.save(saved_model_path)
-    if save_replay_buffer:
-        model.save_replay_buffer(saved_replay_buffer_path)
-    if not evaluate_every_epoch:
-        mean_reward, std_reward = evaluate_policy(model, model.get_env(), n_eval_episodes=10)
-        print(f'Epoch {epoch} mean_reward: {mean_reward:.2f} std_reward: {std_reward:.2f}')
-    del model
-    del env
+if __name__=="__main__":
+    for iteration in range(start_iteration_number, total_iterations):
+        env = create_env(which='dummy', iteration=iteration, eval=False)
+
+        saved_model_path = os.path.join(dir, f'{name}_model.zip')
+        if os.path.exists(saved_model_path):
+            model = PPO.load(saved_model_path, env=env, verbose=verbose, print_system_info=True)
+            model.set_random_seed(iteration)
+            model._last_obs = None
+        else:
+            model = PPO('MultiInputPolicy', env, seed=iteration, verbose=verbose)
+
+        try:
+            # 24576 12288 6144 3072 1536 768 384 192 96 48 24 12 6 3
+            model.learn(total_timesteps=int(episode_max_steps*learn_episodes),
+                log_interval=4,
+                callback=save_on_best_training_reward_callback,
+                reset_num_timesteps = False,
+                progress_bar=True)
+            model.save(saved_model_path)
+            cleanup_model_env(model, env)
+        except Exception as e:
+            cleanup_model_env(model, env)
+            raise e
+
+        if evaluate_episodes_every_iteration > 0:
+            if verbose > 0:
+                print(f'Evaluate policy at iteration {iteration} '
+                      f'({evaluate_episodes_every_iteration} episodes)')
+            os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+            env = create_env(which='dummy', iteration=iteration, eval=True)
+            try:
+                model = PPO.load(saved_model_path, env=env, verbose=verbose, print_system_info=True)
+                model.set_random_seed(iteration)
+                model._last_obs = None
+                mean_reward, std_reward = evaluate_policy(model, env=env, deterministic=True,
+                    n_eval_episodes=evaluate_episodes_every_iteration)
+                save_evaluation_statistics(mean_reward, std_reward, name, dir, iteration)
+                cleanup_model_env(model, env)
+            except Exception as e:
+                cleanup_model_env(model, env)
+                raise e

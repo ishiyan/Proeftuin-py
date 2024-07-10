@@ -34,6 +34,7 @@ class Environment(Broker, gym.Env):
         reward_scheme: RewardScheme,
         features_pipeline: Optional[Sequence[Feature]] = None,
         initial_balance: Real = 100000,
+        halt_account_if_negative_balance: bool=True,
         risk_free_rate: Real = 0,
         day_count_convention: Literal['raw', 'actual/365', 'actual/360', '30/360'] = 'raw',
         agent_order_delay: Union[Real, timedelta] = 3,
@@ -49,6 +50,7 @@ class Environment(Broker, gym.Env):
         max_trades_period = 4,
         render_mode: Optional[str] = None,
         log: Optional[logging.Logger] = None,
+        vec_env_index: Optional[int] = None,
         **kwargs):
         """
         Args:
@@ -70,6 +72,8 @@ class Environment(Broker, gym.Env):
             initial_balance Real:
                 Specify initial balance to start episode with.
                 Default: 100000
+            halt_account_if_negative_balance bool:
+                Specify whether to halt the account if balance becomes negative.
             risk_free_rate Real:
                 Specify the risk free rate to use in the account performance
                 calculations.
@@ -147,7 +151,14 @@ class Environment(Broker, gym.Env):
             log Optional[logging.Logger]:
                 Optionally specify a logger object to receive some info and debug messages.
                 Default: None
+            vec_env_index Optional[int]:
+                Optionally specify the index of the environment in a vectorized environment.
         """
+        if not isinstance(vec_env_index, int) and vec_env_index is not None:
+            raise ValueError(f'Vector environment index {vec_env_index}' \
+                'must be an integer number or None')
+        self.vec_env_index = vec_env_index
+
         # Initialize the renderer.
         if render_mode is not None and \
             render_mode not in self.metadata['render_modes']:
@@ -155,15 +166,11 @@ class Environment(Broker, gym.Env):
                              f'of the following: {self.metadata["render_modes"]}')
         self.render_mode: str = render_mode
         if self.render_mode == 'rgb_array':
-            self.renderer = MatplotlibRenderer()
+            self.renderer = MatplotlibRenderer(vec_env_index=vec_env_index)
         elif self.render_mode == 'ansi':
-            self.renderer = CsvRenderer()
+            self.renderer = CsvRenderer(vec_env_index=vec_env_index)
         else:
             self.renderer = None
-
-        # Initial balance to start trading in new episode.
-        assert isinstance(initial_balance, Real) and (initial_balance > 0)
-        self.initial_balance = initial_balance
         
         if warm_up_duration is None:
             warm_up_duration = timedelta(seconds=0.0)
@@ -172,7 +179,7 @@ class Environment(Broker, gym.Env):
         elif isinstance(warm_up_duration, timedelta):
             pass
         else:
-            raise ValueError('Invalid warm_up_duration value')
+            raise ValueError(f'Invalid {warm_up_duration} value')
         assert warm_up_duration.total_seconds() >= 0
         self.warm_up_duration: timedelta = warm_up_duration
 
@@ -209,9 +216,16 @@ class Environment(Broker, gym.Env):
         self.delay_per_second = delay_per_second
 
         # Initialize account.
-        assert isinstance(risk_free_rate, Real) and (risk_free_rate >= 0)
-        assert isinstance(day_count_convention, str) and \
-            (day_count_convention in {'raw', 'actual/365', 'actual/360', '30/360'})
+        if not isinstance(initial_balance, Real) or (initial_balance <= 0):
+            raise ValueError(f'Initial balance {initial_balance} must be a positive number')
+
+        if not isinstance(risk_free_rate, Real) or (risk_free_rate < 0):
+            raise ValueError(f'Risk free rate {risk_free_rate} must not be a negative number')
+
+        if not isinstance(day_count_convention, str) or \
+            (day_count_convention not in {'raw', 'actual/365', 'actual/360', '30/360'}):
+            raise ValueError(f'Day count convention {day_count_convention}' \
+                "must be one of: {'raw', 'actual/365', 'actual/360', '30/360'}")
         if day_count_convention == 'actual/365':
             dcc = DayCountConvention.ACTUAL_365
         elif day_count_convention == 'actual/360':
@@ -235,14 +249,18 @@ class Environment(Broker, gym.Env):
                          order_luck = order_luck,
                          commission = commission,
                          instant_balance_update = instant_balance_update,
+                         halt_account_if_negative_balance = halt_account_if_negative_balance,
                          **kwargs)
         
         # Setup main objects.
         if isinstance(provider, Provider):
             self.providers = [provider]
         elif isinstance(provider, Sequence):
-            assert len(provider) > 0, 'You should specify at least 1 data provider!'
-            assert all([isinstance(p, Provider) for p in provider]), 'Some of objects are not providers!'
+            if len(provider) < 1:
+                raise ValueError(f'At least 1 data provider must be specified')
+            if not all([isinstance(p, Provider) for p in provider]):
+                raise ValueError(f'Some of objects in provider sequence {provider} ' \
+                    'are not providers')
             self.providers = provider
         else:
             raise ValueError(f'Invalid provider {provider}')
@@ -344,11 +362,12 @@ class Environment(Broker, gym.Env):
             self.provider = self.providers[idx]
 
         # Initialize provider for a random or specified date (any other behavior is encoded in **kwargs).
+        min_duration = self.episode_max_duration.total_seconds() \
+            if self.episode_max_duration is not None else 0
         self.episode_start_datetime = self.provider.reset(
             episode_start_datetime = None,
             episode_min_duration = \
-                self.episode_max_duration.total_seconds() + \
-                self.warm_up_duration.total_seconds(),
+                min_duration + self.warm_up_duration.total_seconds(),
             rng = self.rng) + self.warm_up_duration
 
         # Reset span time.
@@ -370,11 +389,12 @@ class Environment(Broker, gym.Env):
             self.episode_start_datetime = frame.time_start
 
         state = self._make_state()
+        self._set_frame_info(frame)
         if self.renderer is not None:
             self.renderer.reset(episode_number = self.episode_number,
                                 episode_max_steps = self.episode_max_steps,
                                 account = self.account, provider = self.provider,
-                                aggregator = self.aggregator, frame = frame)
+                                aggregator = self.aggregator, frames = self.frames)
         return state, frame
 
     def step(self, action: Any) -> Tuple[Union[OrderedDict, None], float, bool, bool, Union[Frame, None]]:
@@ -421,10 +441,12 @@ class Environment(Broker, gym.Env):
                                  datetime = self.last_trade.datetime)
             
         reward = self.reward_scheme.get_reward(env = self, account = self.account)
-        terminated = self.account.is_halted or self.account.balance <= 0            
+        terminated = (self.account.is_halted or self.account.balance <= 0) \
+            if self.halt_account_if_negative_balance else False
 
+        self._set_frame_info(frame)
         if self.renderer is not None:
-            self.renderer.step(frame = frame, reward = reward)
+            self.renderer.step(frames = self.frames, reward = reward)
 
         return state, reward, terminated, truncated, frame
 
@@ -487,6 +509,15 @@ class Environment(Broker, gym.Env):
     def _make_state(self) -> OrderedDict:
         assert isinstance(self.state, OrderedDict)
         return self.state
+
+    def _set_frame_info(self, frame: Frame):
+        if frame is not None:
+            frame['vec_env_index'] = self.vec_env_index if self.vec_env_index is not None else 0
+            frame['episode_number'] = self.episode_number
+            frame['step_number'] = self.step_number
+            frame['provider_name'] = self.provider.name
+            frame['aggregator_name'] = self.aggregator.name
+            frame['account_halted'] = self.account.is_halted
 
     def close(self):
         # Reset broker (it resets accounts).

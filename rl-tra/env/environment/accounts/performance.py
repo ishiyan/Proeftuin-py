@@ -131,7 +131,7 @@ class Performance(object):
     @property
     def roi_mean(self):
         """Mean value for returns on investments"""
-        return np.mean(self.returns_on_investments) if (len(self.returns_on_investments) > 0) else None
+        return np.mean(self.returns_on_investments) if (len(self.returns_on_investments) > 0) else 0
 
     @property
     def roi_std(self):
@@ -147,7 +147,7 @@ class Performance(object):
     @property
     def roiann_mean(self):
         """Mean value for annualized returns on investments"""
-        return np.mean(self.returns_on_investments_annual) if (len(self.returns_on_investments_annual) > 0) else None
+        return np.mean(self.returns_on_investments_annual) if (len(self.returns_on_investments_annual) > 0) else 0
     
     @property
     def roiann_std(self):
@@ -167,7 +167,7 @@ class Performance(object):
         roi_tdd = self.roi_tdd
         return (
             (roi_mean - self.risk_free_rate) / roi_tdd
-            if (roi_mean is not None) and (roi_tdd != 0) else None
+            if (roi_mean is not None) and (roi_tdd != 0) else 0
         )
 
     @property

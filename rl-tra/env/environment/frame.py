@@ -2,6 +2,8 @@ from __future__ import annotations
 from numbers import Real
 from typing import Sequence, Union, Optional
 from datetime import datetime, timedelta
+import copy
+
 
 from .providers import Trade, TradeOI
 
@@ -224,6 +226,13 @@ class Frame(object):
         for key, value in kwargs.items():
             if hasattr(self, key):
                 setattr(self, key, value)
+
+    def keys(self):
+        return [attr for attr in dir(self) \
+            if not attr.startswith('__') and not callable(getattr(self, attr))]
+
+    def copy(self):
+        return copy.copy(self)
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):

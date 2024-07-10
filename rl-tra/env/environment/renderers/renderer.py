@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import List, Optional
 from numbers import Real
 
 from ..accounts.account import Account
@@ -12,18 +12,18 @@ class Renderer(ABC):
     @abstractmethod
     def reset(self, episode_number: int, episode_max_steps: Optional[int],
             account: Account, provider: Provider, aggregator: TradeAggregator,
-            frame: Frame):
-        raise NotImplementedError()
+            frames: List[Frame]):
+        pass
 
     @abstractmethod
-    def step(self, frame: Frame, reward: Real):
-        raise NotImplementedError()
+    def step(self, frames: List[Frame], reward: Real):
+        pass
 
     @abstractmethod
     def render(self):
-        raise NotImplementedError()
+        pass
 
     @abstractmethod
     def close(self):
-        raise NotImplementedError()
+        pass
     

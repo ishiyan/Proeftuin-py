@@ -21,11 +21,13 @@ class Broker:
                  commission: Union[Real, Callable[[str, Real, Real], Real]] = 20,
                  price_step: Real = 1,
                  ema_period: int = 20,
-                 instant_balance_update=False,
+                 instant_balance_update: bool = False,
+                 halt_account_if_negative_balance: bool = True,
                  **kwargs):
         assert isinstance(account, Account)
         self.account = account
         self.account_is_halted = False
+        self.halt_account_if_negative_balance = halt_account_if_negative_balance
 
         # Delay of execution of orders in seconds
         if isinstance(agent_order_delay, Real):
@@ -176,9 +178,8 @@ class Broker:
         # That is why processing further orders for this account does not have sense.
         if (not self.instant_balance_update) and self.account_is_halted == False:
                 self.account.update_balance(price)
-                #updated_account.add(order.account)
                 # Halt account with negative balance and close its position
-                if (self.account.balance < 0):
+                if self.halt_account_if_negative_balance and self.account.balance < 0:
                     self._halt_account(trade_datetime)
                     self.orders = OrderedDict()
         
@@ -383,12 +384,13 @@ class Broker:
         if self.account.has_position and not self.account_is_halted:
                 self.account.update_balance(price)
                 # Halt account with negative balance and close its position
-                if self.account.balance < 0:
+                if self.halt_account_if_negative_balance and self.account.balance < 0:
                     self._halt_account(datetime)
                     
     def _halt_account(self, dt: Union[Arrow, datetime]):
+        if not self.halt_account_if_negative_balance:
+            return None
         # Mark account as halted
-        self.account_is_halted = True
         self.account.is_halted = True
         if self.account.position.quantity_signed == 0:
             return None
