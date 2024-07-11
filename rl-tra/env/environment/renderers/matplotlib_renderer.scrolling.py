@@ -17,22 +17,22 @@ from .renderer import Renderer
 GREENS_DARK = {
     'up': 'limegreen', 'down': 'tab:blue', 'buy': 'tab:gray', 'sell': 'tab:gray',
     'line': 'tab:blue', 'fig': '#202020', 'ax': '#303030', 'text': '#666666',
-    'title': '#d0d0d0', 'alert': 'tab:red', 'start': 'green'}
+    'title': '#d0d0d0', 'alert': 'tab:red'}
 
 GREENS_LIGHT = {
     'up': 'limegreen', 'down': 'tab:blue', 'buy': 'tab:gray', 'sell': 'tab:gray',
     'line': 'tab:blue', 'fig': 'white', 'ax': 'white', 'text': 'black',
-    'title': 'black', 'alert': 'tab:red', 'start': 'green'}
+    'title': 'black', 'alert': 'tab:red'}
 
 BROWNY_DARK = {
     'up': 'tab:olive', 'down': 'tab:brown', 'buy': 'tab:gray', 'sell': 'tab:gray',
     'line': 'tab:brown', 'fig': '#202020', 'ax': '#303030', 'text': '#666666',
-    'title': '#d0d0d0', 'alert': 'tab:red', 'start': 'green'}
+    'title': '#d0d0d0', 'alert': 'tab:red'}
 
 BROWNY_LIGHT = {
     'up': 'tab:olive', 'down': 'tab:brown', 'buy': 'tab:gray', 'sell': 'tab:gray',
     'line': 'tab:brown', 'fig': 'white', 'ax': 'white', 'text': 'black',
-    'title': 'black', 'alert': 'tab:red', 'start': 'green'}
+    'title': 'black', 'alert': 'tab:red'}
 
 # Linear interpolation for the figure widh
 MIN_WIDTH, MAX_WIDTH = 12.8, 19.2 #6.4, 12.8 + 3.2 + 3.2/2=1.6
@@ -50,7 +50,6 @@ class MatplotlibRenderer(Renderer):
         self.vec_env_index = vec_env_index
         self.dpi = dpi # DPI to render the figure
         self.colors = colors
-        self.method = 'scroll' # scroll, shrink
 
         self.account: Account = None
         self.provider: Provider = None
@@ -68,10 +67,9 @@ class MatplotlibRenderer(Renderer):
         self.figure = None
         self.axes = None
 
-        self.df_lines_columns = ['ror', 'twr', 'sharpe', 'sortino', 'calmar', 'reward', 'total reward']
-        self.df_candles_columns = ['start', 'open', 'high', 'low', 'close', 'buy', 'sell']
-        self.df_candles = None
-        self.df_lines = None
+        self.df_columns = ['start', 'open', 'high', 'low', 'close', 'buy', 'sell', 'ror', \
+            'twr', 'sharpe', 'sortino', 'calmar', 'reward', 'total reward',]
+        self.df = None
 
     def reset(self, episode_number: int, episode_max_steps: Optional[int],
             account: Account, provider: Provider, aggregator: TradeAggregator,
@@ -117,10 +115,10 @@ class MatplotlibRenderer(Renderer):
             ax.tick_params(labelsize='small')
         for ax in [ax2_1, ax2_2, ax2_4]:
             ax.tick_params(labelbottom=False)
-        ## Limit y-axis labels to 2 decimals
-        #formatter = ticker.FormatStrFormatter('%.2f')
-        #for ax in self.axes:
-        #    ax.yaxis.set_major_formatter(formatter)
+        # Limit y-axis labels to 2 decimals
+        formatter = ticker.FormatStrFormatter('%.2f')
+        for ax in self.axes:
+            ax.yaxis.set_major_formatter(formatter)
 
         self.figure.set_facecolor(self.colors['fig'])
         for ax in self.axes:
@@ -129,8 +127,8 @@ class MatplotlibRenderer(Renderer):
             ax.grid(color=self.colors['text'])
 
         # Pre-populate the DataFrame with zeros
-        self.df_candles = pd.DataFrame({col: [0] * self.episode_max_steps for col in self.df_candles_columns})
-        self.df_lines = pd.DataFrame(columns = self.df_lines_columns)
+        self.df = pd.DataFrame({col: [0] * self.episode_max_steps for col in self.df_columns})
+        #self.df = pd.DataFrame({col: [None]*self.episode_max_steps for col in self.df_columns})
         self._append_reset(frames)
 
     def step(self, frames: List[Frame], reward: Real):
@@ -139,10 +137,10 @@ class MatplotlibRenderer(Renderer):
         self._append_step(frames[-1], reward)
 
     def render(self):
-        self._plot_candlesticks(self.df_candles, self.axes[0]) # ax1
-        #self._plot_bars(self.df_candles, self.axes[0])
+        self._plot_candlesticks(self.df, self.axes[0]) # ax1
+        #self._plot_bars(self.df, self.axes[0])
 
-        row = self.df_lines.iloc[-1]
+        row = self.df.iloc[-1]
         reward = f'reward {row["reward"]:.2f}'
         total_reward = f'total reward {self.total_reward:.2f}'
         sharpe = f'sharpe ratio {row["sharpe"]:.2f}'
@@ -151,13 +149,13 @@ class MatplotlibRenderer(Renderer):
         ror = f'rate of return {row["sharpe"]:.2f}'
         roi = f'retirn on investment {row["sortino"]:.2f}'
 
-        self._plot_column_line(self.df_lines, self.axes[1], 'reward', reward) # ax2_1
-        self._plot_column_line(self.df_lines, self.axes[2], 'total reward', total_reward) # ax3_1
-        self._plot_column_line(self.df_lines, self.axes[3], 'sharpe', sharpe) # ax2_2
-        self._plot_column_line(self.df_lines, self.axes[4], 'sortino', sortino) # ax3_2
-        self._plot_column_line(self.df_lines, self.axes[5], 'twr', twr) # ax2_23
-        self._plot_column_line(self.df_lines, self.axes[6], 'sharpe', ror) # ax2_4
-        self._plot_column_line(self.df_lines, self.axes[7], 'sortino', roi) # ax3_4
+        self._plot_column_line(self.df, self.axes[1], 'reward', reward) # ax2_1
+        self._plot_column_line(self.df, self.axes[2], 'total reward', total_reward) # ax3_1
+        self._plot_column_line(self.df, self.axes[3], 'sharpe', sharpe) # ax2_2
+        self._plot_column_line(self.df, self.axes[4], 'sortino', sortino) # ax3_2
+        self._plot_column_line(self.df, self.axes[5], 'twr', twr) # ax2_23
+        self._plot_column_line(self.df, self.axes[6], 'sharpe', ror) # ax2_4
+        self._plot_column_line(self.df, self.axes[7], 'sortino', roi) # ax3_4
 
         return self._figure_to_rgb_array(self.figure)
         
@@ -166,7 +164,7 @@ class MatplotlibRenderer(Renderer):
             plt.close(self.figure)
 
     def _append_reset(self, frames: List[Frame]):
-        row_candles_template = {
+        row_template = {
             'start': False,
             'open': 0.0,
             'high': 0.0,
@@ -174,23 +172,6 @@ class MatplotlibRenderer(Renderer):
             'close': 0.0,
             'buy': False,
             'sell': False,
-            }
-        #assert set(row_candles_template.keys()) == set(self.df_candles_columns)
-        #assert len(row_candles_template) == len(self.df_candles_columns)
-        w = self.episode_max_steps
-        for i in range(w):
-            frame = frames[i-w]
-            row_candles = row_candles_template.copy()
-            row_candles['open'] = frame.open
-            row_candles['high'] = frame.high
-            row_candles['low'] = frame.low
-            row_candles['close'] = frame.close
-            if i == w-1:
-                row_candles['start'] = True
-            # Update the row at index i directly
-            self.df_candles.iloc[i] = row_candles
-
-        row_lines = {
             'ror': 0.0,
             'twr': 0.0,
             'sharpe': 0.0,
@@ -199,9 +180,20 @@ class MatplotlibRenderer(Renderer):
             'reward': 0.0,
             'total reward': 0.0,
             }
-        #assert set(row_lines.keys()) == set(self.df_lines_columns)
-        #assert len(row_lines) == len(self.df_lines_columns)
-        self.df_lines.loc[len(self.df_lines)] = row_lines
+        #assert set(row.keys()) == set(self.df_columns)
+        #assert len(row) == len(self.df_columns)
+        w = self.episode_max_steps
+        for i in range(w):
+            frame = frames[i-w]
+            row = row_template.copy()
+            row['open'] = frame.open
+            row['high'] = frame.high
+            row['low'] = frame.low
+            row['close'] = frame.close
+            if i == w-1:
+                row['start'] = True
+            # Update the row at index i directly.
+            self.df.iloc[i] = row
 
     def _append_step(self, frame: Frame, reward: Real):
         self.total_reward += reward
@@ -230,11 +222,11 @@ class MatplotlibRenderer(Renderer):
             'total reward': self.total_reward}
         #assert set(row.keys()) == set(self.df_columns)
         #assert len(row) == len(self.df_columns)
-        self.df_candles = self.df_candles.shift(-1)
-        self.df_candles.iloc[-1] = row
+        self.df = self.df.shift(-1)
+        self.df.iloc[-1] = row
 
     def _plot_title(self, ax):
-        row = self.df_candles.iloc[-1]
+        row = self.df.iloc[-1]
         sharpe = row['sharpe']
         sortino = row['sortino']
         calmar = row['calmar']
@@ -283,9 +275,9 @@ class MatplotlibRenderer(Renderer):
         self._plot_title(ax)
 
         # Draw vertical lines where 'start' is True
-        start_indices = self.df_candles[self.df_candles['start']].index
+        start_indices = self.df[self.df['start']].index
         for idx in start_indices:
-            ax.axvline(x=idx, color=self.colors['start'], linewidth=1)
+            ax.axvline(x=idx, color='green', linewidth=1)
 
         # Up and down price movements
         up = df[df.close >= df.open]
