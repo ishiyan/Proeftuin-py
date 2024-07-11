@@ -98,7 +98,7 @@ env = Environment(
 )
 env = HumanRendering(env)
 # --------------------------------- loop
-for episode in range(2): #4
+for episode in range(1): #4
     state, frame = env.reset()
     while True:
         action = env.action_space.sample()

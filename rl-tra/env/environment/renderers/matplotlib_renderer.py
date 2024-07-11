@@ -40,6 +40,10 @@ MIN_STEPS, MAX_STEPS = 128, 312
 STEP_DELTA = (MAX_WIDTH - MIN_WIDTH) / (MAX_STEPS - MIN_STEPS)
 FIXED_HEIGHT = 6.4 #4.8
 
+SCROLL = 'scroll'
+STRETCH = 'stretch'
+SHRINK = 'shrink'
+
 class MatplotlibRenderer(Renderer):
 
     def __init__(self,
@@ -50,7 +54,8 @@ class MatplotlibRenderer(Renderer):
         self.vec_env_index = vec_env_index
         self.dpi = dpi # DPI to render the figure
         self.colors = colors
-        self.method = 'scroll' # scroll, shrink
+        self.price_method = SCROLL # scroll, shrink
+        self.line_method = STRETCH # scroll, shrink
 
         self.account: Account = None
         self.provider: Provider = None
@@ -130,7 +135,12 @@ class MatplotlibRenderer(Renderer):
 
         # Pre-populate the DataFrame with zeros
         self.df_candles = pd.DataFrame({col: [0] * self.episode_max_steps for col in self.df_candles_columns})
-        self.df_lines = pd.DataFrame(columns = self.df_lines_columns)
+        if self.line_method in [SCROLL]:
+            self.df_lines = pd.DataFrame({col: [np.nan] * self.episode_max_steps for col in self.df_lines_columns})
+        elif self.line_method in [STRETCH]:
+            self.df_lines = pd.DataFrame({col: [np.nan] * self.episode_max_steps for col in self.df_lines_columns})
+        else:
+            self.df_lines = pd.DataFrame(columns = self.df_lines_columns)
         self._append_reset(frames)
 
     def step(self, frames: List[Frame], reward: Real):
@@ -143,20 +153,20 @@ class MatplotlibRenderer(Renderer):
         #self._plot_bars(self.df_candles, self.axes[0])
 
         row = self.df_lines.iloc[-1]
-        reward = f'reward {row["reward"]:.2f}'
+        reward = f'reward {row["reward"]:.2f}' if not row["reward"] is None else 'reward n/a'
         total_reward = f'total reward {self.total_reward:.2f}'
-        sharpe = f'sharpe ratio {row["sharpe"]:.2f}'
-        sortino = f'sortino ratio {row["sortino"]:.2f}'
-        twr = f'time weighted return {row["twr"]:.2f}'
-        ror = f'rate of return {row["sharpe"]:.2f}'
-        roi = f'retirn on investment {row["sortino"]:.2f}'
+        sharpe = f'sharpe ratio {row["sharpe"]:.2f}' if not row["sharpe"] is None else 'sharpe ratio n/a'
+        sortino = f'sortino ratio {row["sortino"]:.2f}' if not row["sortino"] is None else 'sortino ratio n/a'
+        twr = f'time weighted return {row["twr"]:.2f}' if not row["twr"] is None else 'twr ratio n/a'
+        ror = f'rate of return {row["ror"]:.2f}' if not row["ror"] is None else 'rate of return n/a'
+        roi = f'return on investment {row["sortino"]:.2f}' if not row["sortino"] is None else 'return on investment n/a'
 
         self._plot_column_line(self.df_lines, self.axes[1], 'reward', reward) # ax2_1
         self._plot_column_line(self.df_lines, self.axes[2], 'total reward', total_reward) # ax3_1
         self._plot_column_line(self.df_lines, self.axes[3], 'sharpe', sharpe) # ax2_2
         self._plot_column_line(self.df_lines, self.axes[4], 'sortino', sortino) # ax3_2
         self._plot_column_line(self.df_lines, self.axes[5], 'twr', twr) # ax2_23
-        self._plot_column_line(self.df_lines, self.axes[6], 'sharpe', ror) # ax2_4
+        self._plot_column_line(self.df_lines, self.axes[6], 'ror', ror) # ax2_4
         self._plot_column_line(self.df_lines, self.axes[7], 'sortino', roi) # ax3_4
 
         return self._figure_to_rgb_array(self.figure)
@@ -175,8 +185,8 @@ class MatplotlibRenderer(Renderer):
             'buy': False,
             'sell': False,
             }
-        #assert set(row_candles_template.keys()) == set(self.df_candles_columns)
-        #assert len(row_candles_template) == len(self.df_candles_columns)
+        assert set(row_candles_template.keys()) == set(self.df_candles_columns)
+        assert len(row_candles_template) == len(self.df_candles_columns)
         w = self.episode_max_steps
         for i in range(w):
             frame = frames[i-w]
@@ -191,29 +201,40 @@ class MatplotlibRenderer(Renderer):
             self.df_candles.iloc[i] = row_candles
 
         row_lines = {
-            'ror': 0.0,
-            'twr': 0.0,
-            'sharpe': 0.0,
-            'sortino': 0.0,
-            'calmar': 0.0,
-            'reward': 0.0,
-            'total reward': 0.0,
+            'ror': np.nan,#0.0,
+            'twr': np.nan,#0.0,
+            'sharpe': np.nan,#0.0,
+            'sortino': np.nan,#0.0,
+            'calmar': np.nan,#0.0,
+            'reward': np.nan,#0.0,
+            'total reward': np.nan,#0.0,
             }
-        #assert set(row_lines.keys()) == set(self.df_lines_columns)
-        #assert len(row_lines) == len(self.df_lines_columns)
-        self.df_lines.loc[len(self.df_lines)] = row_lines
+        assert set(row_lines.keys()) == set(self.df_lines_columns)
+        assert len(row_lines) == len(self.df_lines_columns)
+        if self.line_method == SCROLL:
+            for i in range(w):
+                # Update the row at index i directly
+                self.df_lines.iloc[i] = row_lines
+        elif self.line_method == STRETCH:
+            row_lines = {
+                'ror': 0.0,
+                'twr': 0.0,
+                'sharpe': 0.0,
+                'sortino': 0.0,
+                'calmar': 0.0,
+                'reward': 0.0,
+                'total reward': 0.0,
+            }
+            self.df_lines.iloc[-1] = row_lines
+        else: # SHRINK
+            self.df_lines.loc[len(self.df_lines)] = row_lines # Only use with a RangeIndex!
 
     def _append_step(self, frame: Frame, reward: Real):
-        self.total_reward += reward
         position = self.account.position.quantity_signed
         position_change = position - self.current_position
         self.current_position = position
-        balance = self.account.balance
-        balance_return = balance / self.current_balance - 1.0
-        self.current_balance = balance
-        twr = self.current_twr * (balance_return + 1.0)
-        self.current_twr = twr
-        row = {
+
+        row_candles = {
             'start': False,
             'open': frame.open,
             'high': frame.high,
@@ -221,20 +242,38 @@ class MatplotlibRenderer(Renderer):
             'close': frame.close,
             'buy': True if position_change > 0 else False,
             'sell': True if position_change < 0 else False,
-            'ror': self.account.report.ror,
-            'twr': twr - 1,
-            'sharpe': self.account.report.sharpe_ratio,
-            'sortino': self.account.report.sortino_ratio,
-            'calmar': self.account.report.calmar_ratio,
-            'reward': reward,
-            'total reward': self.total_reward}
-        #assert set(row.keys()) == set(self.df_columns)
-        #assert len(row) == len(self.df_columns)
+            }
+        assert set(row_candles.keys()) == set(self.df_candles_columns)
+        assert len(row_candles) == len(self.df_candles_columns)
         self.df_candles = self.df_candles.shift(-1)
-        self.df_candles.iloc[-1] = row
+        self.df_candles.iloc[-1] = row_candles
+
+        self.total_reward += reward
+        balance = self.account.balance
+        balance_return = balance / self.current_balance - 1.0
+        self.current_balance = balance
+        twr = self.current_twr * (balance_return + 1.0)
+        self.current_twr = twr
+        row_lines = {
+            'ror': self.account.report.ror if self.account.report.ror is not None else np.nan,
+            'twr': twr - 1,
+            'sharpe': self.account.report.sharpe_ratio if self.account.report.sharpe_ratio is not None else np.nan,
+            'sortino': self.account.report.sortino_ratio if self.account.report.sortino_ratio is not None else np.nan,
+            'calmar': self.account.report.calmar_ratio if self.account.report.calmar_ratio is not None else np.nan,
+            'reward': reward,
+            'total reward': self.total_reward if self.total_reward is not None else np.nan}
+        assert set(row_lines.keys()) == set(self.df_lines_columns)
+        assert len(row_lines) == len(self.df_lines_columns)
+        if self.line_method == SCROLL:
+            self.df_lines = self.df_lines.shift(-1)
+            self.df_lines.iloc[-1] = row_lines
+        elif self.line_method == STRETCH:
+            self.df_lines.iloc[self.current_step-1] = row_lines
+        else: # SHRINK
+            self.df_lines.loc[len(self.df_lines)] = row_lines
 
     def _plot_title(self, ax):
-        row = self.df_candles.iloc[-1]
+        row = self.df_lines.iloc[-1]
         sharpe = row['sharpe']
         sortino = row['sortino']
         calmar = row['calmar']
@@ -283,7 +322,7 @@ class MatplotlibRenderer(Renderer):
         self._plot_title(ax)
 
         # Draw vertical lines where 'start' is True
-        start_indices = self.df_candles[self.df_candles['start']].index
+        start_indices = df[df['start']].index
         for idx in start_indices:
             ax.axvline(x=idx, color=self.colors['start'], linewidth=1)
 
@@ -309,7 +348,13 @@ class MatplotlibRenderer(Renderer):
         ax.yaxis.grid(True)
         for spine in ax.spines.values():
             spine.set_visible(False)
+
         self._plot_title(ax)
+
+        # Draw vertical lines where 'start' is True
+        start_indices = df[df['start']].index
+        for idx in start_indices:
+            ax.axvline(x=idx, color=self.colors['start'], linewidth=1)
 
         min_line_width = 0.4  # Minimum line width
         max_line_width = 2.0  # Maximum line width
