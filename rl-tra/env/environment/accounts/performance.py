@@ -73,6 +73,7 @@ class Performance(object):
         self.returns_on_investments_annual.clear()
         self.sortino_downside_returns_annual.clear()
         self.records.clear()
+        self.sharpe_count=0
     
     def add(self, record: PerformanceRecord):
         # Add record to the list
@@ -131,34 +132,34 @@ class Performance(object):
     @property
     def roi_mean(self):
         """Mean value for returns on investments"""
-        return np.mean(self.returns_on_investments) if (len(self.returns_on_investments) > 0) else 0
+        return np.mean(self.returns_on_investments) if (len(self.returns_on_investments) > 0) else None
 
     @property
     def roi_std(self):
         """Standard deviation over returns on investments"""
-        return np.std(self.returns_on_investments) if (len(self.returns_on_investments) > 0) else 0
+        return np.std(self.returns_on_investments) if (len(self.returns_on_investments) > 0) else None
 
     @property
     def roi_tdd(self):
         """Target downside deviation over returns on investments"""
         return np.sqrt(np.mean(np.power(self.sortino_downside_returns, 2))) if (
-            len(self.sortino_downside_returns) > 0) else 0
+            len(self.sortino_downside_returns) > 0) else None
 
     @property
     def roiann_mean(self):
         """Mean value for annualized returns on investments"""
-        return np.mean(self.returns_on_investments_annual) if (len(self.returns_on_investments_annual) > 0) else 0
+        return np.mean(self.returns_on_investments_annual) if (len(self.returns_on_investments_annual) > 0) else None
     
     @property
     def roiann_std(self):
         """Standard deviation over annualized returns on investments"""
-        return np.std(self.returns_on_investments_annual) if (len(self.returns_on_investments_annual) > 0) else 0
+        return np.std(self.returns_on_investments_annual) if (len(self.returns_on_investments_annual) > 0) else None
     
     @property
     def roiann_tdd(self):
         """Target downside deviation over annualized returns on investments"""
         return np.sqrt(np.mean(np.power(self.sortino_downside_returns_annual, 2))) if (
-            len(self.sortino_downside_returns_annual) > 0) else 0
+            len(self.sortino_downside_returns_annual) > 0) else None
     
     @property
     def sortino_ratio(self):
@@ -167,7 +168,7 @@ class Performance(object):
         roi_tdd = self.roi_tdd
         return (
             (roi_mean - self.risk_free_rate) / roi_tdd
-            if (roi_mean is not None) and (roi_tdd != 0) else 0
+            if (roi_mean is not None) and (roi_tdd is not None) and (roi_tdd != 0) else None
         )
 
     @property
@@ -177,22 +178,22 @@ class Performance(object):
         roiann_tdd = self.roiann_tdd
         return (
             (roiann_mean - self.risk_free_rate) / roiann_tdd
-            if (roiann_mean is not None) and (roiann_tdd != 0) else None
+            if (roiann_mean is not None) and (roiann_tdd is not None) else None
         )
     
     @property
     def sharpe_ratio(self):
         """Sharpe ratio over returns on investments"""
         roi_mean = self.roi_mean
-        roi_std = self.roi_std
-        return roi_mean / roi_std if (roi_mean is not None) and (roi_std != 0) else None
+        roi_std = self.roi_std        
+        return roi_mean / roi_std if (roi_mean is not None) and (roi_std is not None) and (roi_std != 0) else None
 
     @property
     def sharpe_ratio_annual(self):
         """Sharpe ratio over annualized returns on investments"""
         roiann_mean = self.roiann_mean
         roiann_std = self.roiann_std
-        return roiann_mean / roiann_std if (roiann_mean is not None) and (roiann_std != 0) else None
+        return roiann_mean / roiann_std if (roiann_mean is not None) and (roiann_std is not None) else None
     
     @property
     def calmar_ratio(self):
