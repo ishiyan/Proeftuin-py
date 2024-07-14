@@ -1,3 +1,4 @@
+from collections import OrderedDict
 from numbers import Real
 from typing import List, Optional
 
@@ -87,7 +88,7 @@ class CsvRenderer(Renderer):
 
     def reset(self, episode_number: int, episode_max_steps: Optional[int],
             account: Account, provider: Provider, aggregator: TradeAggregator,
-            frames: List[Frame]):
+            frames: List[Frame], observation: OrderedDict):
         self.account = account
 
         self.provider_name = provider.name
@@ -101,7 +102,7 @@ class CsvRenderer(Renderer):
 
         self._append_step(frames[-1], 0.0)
 
-    def step(self, frames: List[Frame], reward: Real):
+    def step(self, frames: List[Frame], reward: Real, observation: OrderedDict):
         self.step_number += 1
         self._append_step(frames[-1], reward)
 

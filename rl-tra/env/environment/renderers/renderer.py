@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections import OrderedDict
 from typing import List, Optional
 from numbers import Real
 
@@ -12,11 +13,11 @@ class Renderer(ABC):
     @abstractmethod
     def reset(self, episode_number: int, episode_max_steps: Optional[int],
             account: Account, provider: Provider, aggregator: TradeAggregator,
-            frames: List[Frame]):
+            frames: List[Frame], observation: OrderedDict):
         pass
 
     @abstractmethod
-    def step(self, frames: List[Frame], reward: Real):
+    def step(self, frames: List[Frame], reward: Real, observation: OrderedDict):
         pass
 
     @abstractmethod

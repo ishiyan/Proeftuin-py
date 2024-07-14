@@ -1,10 +1,10 @@
-import io
-from numbers import Real
+from collections import OrderedDict
 from typing import List, Optional
+from numbers import Real
+import io
 
 import matplotlib
 import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
 import numpy as np
 import pandas as pd
 
@@ -55,7 +55,7 @@ SCROLL = 0
 EXPAND = 1
 SHRINK = 2
 
-class MatplotlibRenderer(Renderer):
+class MatplotlibPriceRenderer(Renderer):
     """
     Renders the trading environment in 'rgb_array' render mode.
     """
@@ -202,7 +202,7 @@ class MatplotlibRenderer(Renderer):
 
     def reset(self, episode_number: int, episode_max_steps: Optional[int],
             account: Account, provider: Provider, aggregator: TradeAggregator,
-            frames: List[Frame]):
+            frames: List[Frame], observation: OrderedDict):
         self.account = account
         self.provider = provider
         self.aggregator = aggregator
@@ -239,11 +239,6 @@ class MatplotlibRenderer(Renderer):
         for ax in [ax2_1, ax2_2, ax2_4]:
             ax.tick_params(labelbottom=False)
 
-        ## Limit y-axis labels to 2 decimals
-        #formatter = ticker.FormatStrFormatter('%.2f')
-        #for ax in self.axes:
-        #    ax.yaxis.set_major_formatter(formatter)
-
         self.figure.set_facecolor(self.colors['fig'])
         for ax in self.axes:
             ax.set_facecolor(self.colors['ax'])
@@ -252,7 +247,7 @@ class MatplotlibRenderer(Renderer):
 
         self._append_reset(frames)
 
-    def step(self, frames: List[Frame], reward: Real):
+    def step(self, frames: List[Frame], reward: Real, observation: OrderedDict):
         self.current_step += 1
         self._append_step(frames[-1], reward)
 

@@ -92,6 +92,7 @@ env = Environment(
     warm_up_duration=None,
     episode_max_duration=None,
     render_mode='rgb_array',
+    render_observations=False,
     initial_balance=10000,
     halt_account_if_negative_balance=False,
     episode_max_steps=180#128#196

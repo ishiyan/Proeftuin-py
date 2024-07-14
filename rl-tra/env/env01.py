@@ -23,6 +23,7 @@ class Env01(Environment):
                  action_scheme: Optional[ActionScheme]=None,
                  reward_scheme: Optional[RewardScheme]=None,
                  render_mode=None,
+                 render_observations: bool = False,
                  vec_env_index: Optional[int] = None,
                 ):
         """
@@ -103,6 +104,7 @@ class Env01(Environment):
             episode_max_duration=time_frame_secs* \
                 (episode_max_steps + max(scale_period, copy_period)),
             render_mode=render_mode,
+            render_observations=render_observations,
             initial_balance=initial_balance,
             halt_account_if_negative_balance=False,
             episode_max_steps=episode_max_steps,

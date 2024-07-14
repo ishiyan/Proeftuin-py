@@ -16,7 +16,7 @@ from .rewards import RewardScheme
 from .features import Feature, TradesFeature
 from .broker import Broker
 from .accounts import Account,DayCountConvention
-from .renderers import CsvRenderer, MatplotlibRenderer
+from .renderers import CsvRenderer, MatplotlibPriceRenderer, MatplotlibObservationRenderer
 
 def binance_commission(operation: str, amount: Real, price: Real) -> Real:
     return 0.0004 * abs(amount) * price
@@ -49,6 +49,7 @@ class Environment(Broker, gym.Env):
         max_frames_period = 4,
         max_trades_period = 4,
         render_mode: Optional[str] = None,
+        render_observations: bool = False,
         log: Optional[logging.Logger] = None,
         vec_env_index: Optional[int] = None,
         **kwargs):
@@ -148,6 +149,19 @@ class Environment(Broker, gym.Env):
             render_mode Optional[str]:
                 Specify the rendering mode. It may be 'ansi', 'rgb_array' or None.
                 Default: None
+            render_observations bool:
+                This option is used only if render_mode is 'rgb_array'.
+                Otherwise, it is ignored.
+
+                It is useful when you want to see how observations are correlated
+                and how observation series look like.
+
+                Set it to True to render observations with the correlation heatmap.
+
+                Set it to False to render rewards, price history, orders and account
+                performance info.
+
+                Default: False
             log Optional[logging.Logger]:
                 Optionally specify a logger object to receive some info and debug messages.
                 Default: None
@@ -166,7 +180,12 @@ class Environment(Broker, gym.Env):
                              f'of the following: {self.metadata["render_modes"]}')
         self.render_mode: str = render_mode
         if self.render_mode == 'rgb_array':
-            self.renderer = MatplotlibRenderer(vec_env_index=vec_env_index)
+            if render_observations:
+                self.renderer = \
+                    MatplotlibObservationRenderer(vec_env_index=vec_env_index)
+            else:
+                self.renderer = \
+                    MatplotlibPriceRenderer(vec_env_index=vec_env_index)
         elif self.render_mode == 'ansi':
             self.renderer = CsvRenderer(vec_env_index=vec_env_index)
         else:
@@ -394,7 +413,8 @@ class Environment(Broker, gym.Env):
             self.renderer.reset(episode_number = self.episode_number,
                                 episode_max_steps = self.episode_max_steps,
                                 account = self.account, provider = self.provider,
-                                aggregator = self.aggregator, frames = self.frames)
+                                aggregator = self.aggregator,
+                                frames = self.frames, observation = state)
         return state, frame
 
     def step(self, action: Any) -> Tuple[Union[OrderedDict, None], float, bool, bool, Union[Frame, None]]:
@@ -446,7 +466,8 @@ class Environment(Broker, gym.Env):
 
         self._set_frame_info(frame)
         if self.renderer is not None:
-            self.renderer.step(frames = self.frames, reward = reward)
+            self.renderer.step(frames = self.frames, reward = reward,
+                               observation = state)
 
         return state, reward, terminated, truncated, frame
 

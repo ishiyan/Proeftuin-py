@@ -1,3 +1,4 @@
 from .renderer import Renderer
-from .matplotlib_renderer import MatplotlibRenderer
+from .matplotlib_price_renderer import MatplotlibPriceRenderer
+from .matplotlib_observation_renderer import MatplotlibObservationRenderer
 from .csv_renderer import CsvRenderer
