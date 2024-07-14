@@ -40,7 +40,7 @@ def create_env(which='subproc', iteration: int=1, eval: bool=False):
 
 if __name__=="__main__":
     for iteration in range(start_iteration_number, total_iterations):
-        env = create_env(which='dummy', iteration=iteration, eval=False)
+        env = create_env(which='subproc', iteration=iteration, eval=False)
 
         saved_model_path = os.path.join(dir, f'{name}_model.zip')
         if os.path.exists(saved_model_path):
@@ -68,7 +68,7 @@ if __name__=="__main__":
                 print(f'Evaluate policy at iteration {iteration} '
                       f'({evaluate_episodes_every_iteration} episodes)')
             os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
-            env = create_env(which='dummy', iteration=iteration, eval=True)
+            env = create_env(which='subproc', iteration=iteration, eval=True)
             try:
                 model = PPO.load(saved_model_path, env=env, verbose=verbose, print_system_info=True)
                 model.set_random_seed(iteration)
