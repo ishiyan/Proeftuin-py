@@ -6,6 +6,7 @@ ETHUSDT@Binance(k) time@21600 ohlc-ratios.svg
 ETHUSDT@Binance(k) time@21600 ohlc-ratios corr+p.svg
 ETHUSDT@Binance(k) time@21600 ohlc-ratios corr.svg
 
+ETHUSDT@Binance(k) time@21600 distr l_h.svg
 ETHUSDT@Binance(k) time@21600 distr cl_hl.svg
 ETHUSDT@Binance(k) time@21600 distr ol_hl.svg
 -------------------------------
@@ -14,5 +15,6 @@ ETHUSDT@Binance(k) time@21600 distr ol_hl.svg
 ./readme/ohlc-ratios/ETHUSDT@Binance(k)%20time@21600%20ohlc-ratios%20corr+p.svg
 ./readme/ohlc-ratios/ETHUSDT@Binance(k)%20time@21600%20ohlc-ratios%20corr.svg
 
+./readme/ohlc-ratios/ETHUSDT@Binance(k)%20time@21600%20distr%20l_h.svg
 ./readme/ohlc-ratios/ETHUSDT@Binance(k)%20time@21600%20distr%20cl_hl.svg
 ./readme/ohlc-ratios/ETHUSDT@Binance(k)%20time@21600%20distr%20ol_hl.svg

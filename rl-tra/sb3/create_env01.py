@@ -53,11 +53,12 @@ def _create_env01(
     dir, prefix = _create_dir_and_prefix(dir, iteration, name, eval)
     env = Env01(
         symbol=symbol,
-        time_frame='1m',
+        time_frame='1m', # '1m','1h'
         scale_period = episode_max_steps,
         copy_period = episode_max_steps,
         episode_max_steps=episode_max_steps,
         render_mode=render_mode,
+        render_observations=True,
         vec_env_index=vec_env_index
         )
     if render == 'gif':

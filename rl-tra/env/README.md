@@ -420,7 +420,37 @@ The distributions of scaled prices are:
 
 ### OHLC ratios
 
-In the following illustration, we show these ratios created from `open`, `high`, `low` and `close` prices.
+Instead of using unbounded `open` ($\text o$), `high` ($\text h$), `low` ($\text l$) and `close` ($\text c$) prices directly, we can create and use three coefficients
+($k_l$, $k_o$ and $k_c$) which define the shape of a candlestick and are bounded in $[0, 1]$:
+
+$$\tag*{(1)} k_l=\text l / \text h$$
+$$\tag*{(2)} k_o=\begin{cases}(\text o -\text l)/(\text h -\text l) & \text h \gt \text l \\ 0 & \text h = \text l \end{cases}$$
+$$\tag*{(3)} k_c=\begin{cases}(\text c -\text l)/(\text h -\text l) & \text h \gt \text l \\ 0 & \text h = \text l \end{cases}$$
+
+One can also think of another coefficient $(\text c - \text o )/(\text h - \text l )$,
+but it is equivalent to $k_c - k_o$.
+
+Since there are four prices and only three coefficients, we need to know one of four prices to
+restore the rest of the prices from the coefficients. For the ease of convention, we choose it to be
+the `close` ($\text c$) price. Then, it is easy to derive how to restore the `high` ($\text h$), `low` ($\text l$) and `open` ($\text o$).
+
+Submitting $(1)$ into $(2)$:
+$$k_o = (\text o - k_l\text h)/\text h (1 -k_l)$$
+$$k_o\text h (1 -k_l) = \text o - k_l\text h$$
+$$\text o = (k_o + k_l - k_ok_l)\text{ h}$$
+Submitting $(1)$ into $(3)$:
+$$k_c = (\text c - k_l\text h)/\text h (1 -k_l)$$
+$$k_c\text h (1 -k_l) = \text c - k_l\text h$$
+$$\text c = (k_c + k_l - k_ck_l)\text{ h}$$
+This gives:
+$$\tag*{(4)} \text h = \frac{1}{k_c + k_l - k_ck_l}\text { c}$$
+$$\tag*{(5)} \text l = \frac{k_l}{k_c + k_l - k_ck_l}\text { c}$$
+$$\tag*{(6)} \text o = \frac{k_o + k_l - k_ok_l}{k_c + k_l - k_ck_l}\text { c}$$
+
+It is easy to check that in extreme situation $\text h = \text l$,
+$k_l = 1$, $k_o = 0$, $k_c = 0$ and $\text h = \text l = \text o = \text c$.
+
+In the following illustration, we show these ratios.
 
 ![Ohlc ratios](./readme/ohlc-ratios/ETHUSDT@Binance(k)%20time@21600%20ohlc-ratios.svg)
 
@@ -430,9 +460,9 @@ The ratios are not very correlated with raw prices.
 
 The distributions of ratios are:
 
-| o-l / h-l | c-l / h-l |
-| --- | --- |
-| ![olhl](./readme/ohlc-ratios/ETHUSDT@Binance(k)%20time@21600%20distr%20ol_hl.svg) | ![clhl](./readme/ohlc-ratios/ETHUSDT@Binance(k)%20time@21600%20distr%20cl_hl.svg) |
+| $$\frac{l}{h}$$ | $$\frac{o-l}{h-l}$$ | $$\frac{c-l}{h-l}$$ |
+| --- | --- | --- |
+| ![olhl](./readme/ohlc-ratios/ETHUSDT@Binance(k)%20time@21600%20distr%20l_h.svg) | ![olhl](./readme/ohlc-ratios/ETHUSDT@Binance(k)%20time@21600%20distr%20ol_hl.svg) | ![clhl](./readme/ohlc-ratios/ETHUSDT@Binance(k)%20time@21600%20distr%20cl_hl.svg) |
 
 ### Technical analysis indicators
 

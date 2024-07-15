@@ -69,6 +69,7 @@ features_pipeline = [
         (f'{SCALE_METHOD}{SCALE_PERIOD}_low', -math.inf, math.inf),
         (f'{SCALE_METHOD}{SCALE_PERIOD}_close', -math.inf, math.inf),
         (f'{SCALE_METHOD}{SCALE_PERIOD}_volume', -math.inf, math.inf),
+        ('l_h', 0.0, 1.0),
         ('ol_hl', 0.0, 1.0),
         ('cl_hl', 0.0, 1.0),
         ('yday_time_start', 0.0, 1.0),
@@ -96,7 +97,7 @@ env = Environment(
     initial_balance=10000,
     halt_account_if_negative_balance=False,
     episode_max_steps=180#128#196
-)
+    )
 env = HumanRendering(env)
 # --------------------------------- loop
 for episode in range(1): #4

@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from datetime import date, datetime, timezone
 from typing import List, Tuple
+import os
 
 import numpy as np
 import pandas as pd
@@ -48,7 +49,7 @@ DO_WINDOW_SCALER_RAW = False
 DO_WINDOW_SCALER_MINMAX = False
 DO_WINDOW_SCALER_ZSCORE = False
 DO_WINDOW_SCALER_ROBUST = False
-DO_OHLC_RATIOS = False
+DO_OHLC_RATIOS = True
 DO_TA_1 = False
 
 def plot_features(df, title, 
@@ -365,7 +366,7 @@ def print_frames_and_observations(
             print(line)
 
 symbol = 'ETHUSDT'
-dir = 'D:/data/binance_monthly_klines/'
+dir = './data/binance_monthly_klines/'
 provider = BinanceMonthlyKlines1mToTradesProvider(data_dir = dir, symbol = symbol,
             date_from = date(2024, 3, 1), date_to = date(2024, 4, 30), spread=0.5)
 datetime_cutoff = datetime(2024, 4, 30, tzinfo=timezone.utc)
@@ -381,6 +382,14 @@ name_6h = f'{provider.name} {aggregator_6h.name}'
 episode_steps = 16
 lookback_steps = 196 # how many previous frames to consider
 
+RDM = 'readme/'
+LT = 'light/'
+DK = 'dark/'
+if not os.path.exists(RDM+DK):
+    os.makedirs(RDM+DK, exist_ok=True)
+if not os.path.exists(RDM+LT):
+    os.makedirs(RDM+LT, exist_ok=True)
+
 if DO_COPY:
     features: List[Feature] = [
         Copy(source=['volume'])
@@ -388,7 +397,7 @@ if DO_COPY:
     frames_6h, states_6h = get_frames_and_observations(provider, aggregator_6h,
             episode_steps, lookback_steps, features, datetime_cutoff)
     print('copy', 'frames', len(frames_6h), 'states', len(states_6h))
-    print_frames_and_observations(frames_6h, states_6h, filename=name_6h+' copy.txt')
+    print_frames_and_observations(frames_6h, states_6h, filename=RDM+name_6h+' copy.txt')
 
 if DO_TIME_ENCODER:
     features: List[Feature] = [
@@ -397,7 +406,7 @@ if DO_TIME_ENCODER:
     frames_6h, states_6h = get_frames_and_observations(provider, aggregator_6h,
             episode_steps, lookback_steps, features, datetime_cutoff)
     print('time encoder', 'frames', len(frames_6h), 'states', len(states_6h))
-    print_frames_and_observations(frames_6h, states_6h, filename=name_6h+' time enc.txt', feature_decimals=4)
+    print_frames_and_observations(frames_6h, states_6h, filename=RDM+name_6h+' time enc.txt', feature_decimals=4)
     df = df_from_frames_and_observations(frames_6h, states_6h)
     #print(df.head())
     df = df.rename(columns={
@@ -409,7 +418,7 @@ if DO_TIME_ENCODER:
     for dark in [True, False]:
         fig = plot_features(df, name_6h+' time encoder', show_legend=False, dark=dark,
             panes=[['yday'],['wday'],['tday']])
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' time enc.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' time enc.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
     # Correlation time encoders with price.
@@ -417,21 +426,21 @@ if DO_TIME_ENCODER:
         'yday', 'wday', 'tday']].corr()
     for dark in [True, False]:        
         fig = plot_correllation_heatmap(corr, None, coeff=True, dark=dark)
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' time enc corr+p.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' time enc corr+p.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
     # Correlation time encoders.
     corr = df[['yday', 'wday', 'tday']].corr()
     for dark in [True, False]:        
         fig = plot_correllation_heatmap(corr, None, coeff=True, dark=dark)
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' time enc corr.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' time enc corr.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
     # Distribution time encoders.
     for column in ['yday', 'wday', 'tday']:
         for dark in [True, False]:
             fig = plot_distribution_histogram(df, [column], dark=dark)
-            fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' distr '+column+'.'+FIG_EXT)
+            fig.savefig(RDM+(DK if dark else LT)+name_6h+' distr '+column+'.'+FIG_EXT)
             #plt.show()
             plt.close(fig)
 
@@ -441,28 +450,28 @@ if DO_RAW_PRICE:
     frames_6h, states_6h = get_frames_and_observations(provider, aggregator_6h,
             episode_steps, lookback_steps, features, datetime_cutoff)
     print('raw price', 'frames', len(frames_6h), 'states', len(states_6h))
-    print_frames_and_observations(frames_6h, states_6h, filename=name_6h+' raw price.txt')
+    print_frames_and_observations(frames_6h, states_6h, filename=RDM+name_6h+' raw price.txt')
     df = df_from_frames_and_observations(frames_6h, states_6h)
     #print(df.head())
     # Price chart.
     for dark in [True, False]:
         fig = plot_features(df, name_6h, show_legend=False, dark=dark,
             panes=[])
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' raw price.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' raw price.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
     # Correlation raw price.
     corr = df[['open', 'high', 'low', 'close']].corr()
     for dark in [True, False]:
         fig = plot_correllation_heatmap(corr, None, coeff=True, dark=dark)
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' raw price corr.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' raw price corr.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
     # Distribution raw price.
     for column in ['open', 'high', 'low', 'close']:
         for dark in [True, False]:
             fig = plot_distribution_histogram(df, [column], dark=dark)
-            fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' raw price distr '+column+'.'+FIG_EXT)
+            fig.savefig(RDM+(DK if dark else LT)+name_6h+' raw price distr '+column+'.'+FIG_EXT)
             #plt.show()
             plt.close(fig)
 
@@ -474,7 +483,7 @@ if DO_PRICE_ENCODER:
     frames_6h, states_6h = get_frames_and_observations(provider, aggregator_6h,
             episode_steps, lookback_steps, features, datetime_cutoff)
     print('price encoder', 'frames', len(frames_6h), 'states', len(states_6h))
-    print_frames_and_observations(frames_6h, states_6h, filename=name_6h+' price-enc.txt', feature_decimals=6)
+    print_frames_and_observations(frames_6h, states_6h, filename=RDM+name_6h+' price-enc.txt', feature_decimals=6)
     df = df_from_frames_and_observations(frames_6h, states_6h)
     #print(df.head())
     df = df.rename(columns={
@@ -491,22 +500,22 @@ if DO_PRICE_ENCODER:
     for dark in [True, False]:
         fig = plot_features(df, name_6h+' price returns', show_legend=False, dark=dark,
             panes=[['ret(c) open'], ['ret(c) high'], ['ret(c) low'], ['ret(c) close']])
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' price-enc ret.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' price-enc ret.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
         fig = plot_features(df, name_6h+' price log returns', show_legend=False, dark=dark,
             panes=[[ 'logret(c) open'], ['logret(c) high'], ['logret(c) low'], ['logret(c) close']])
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' price-enc logret.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' price-enc logret.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
         fig = plot_features_as_candlesticks(df, name_6h, 'price returns',
             'ret(c) open', 'ret(c) high', 'ret(c) low', 'ret(c) close', dark=dark)
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' price-enc ret candlesticks.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' price-enc ret candlesticks.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
         fig = plot_features_as_candlesticks(df, name_6h, 'price log returns',
             'logret(c) open', 'logret(c) high', 'logret(c) low', 'logret(c) close', dark=dark)
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' price-enc logret candlesticks.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' price-enc logret candlesticks.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
     # Correlation price, returns, logreturns.
@@ -516,7 +525,7 @@ if DO_PRICE_ENCODER:
         ]].corr()
     for dark in [True, False]:
         fig = plot_correllation_heatmap(corr, None, coeff=True, dark=dark)
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' price-enc corr ret+logret+p.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' price-enc corr ret+logret+p.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
     # Correlation price, returns.
@@ -525,7 +534,7 @@ if DO_PRICE_ENCODER:
         ]].corr()
     for dark in [True, False]:
         fig = plot_correllation_heatmap(corr, None, coeff=True, dark=dark)
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' price-enc corr ret+p.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' price-enc corr ret+p.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
     # Correlation price, logreturns.
@@ -534,7 +543,7 @@ if DO_PRICE_ENCODER:
         ]].corr()
     for dark in [True, False]:
         fig = plot_correllation_heatmap(corr, None, coeff=True, dark=dark)
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' price-enc corr logret+p.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' price-enc corr logret+p.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
     # Correlation returns.
@@ -543,7 +552,7 @@ if DO_PRICE_ENCODER:
         ]].corr()
     for dark in [True, False]:
         fig = plot_correllation_heatmap(corr, None, coeff=True, dark=dark)
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' price-enc corr ret.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' price-enc corr ret.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
     # Correlation logreturns.
@@ -552,7 +561,7 @@ if DO_PRICE_ENCODER:
         ]].corr()
     for dark in [True, False]:
         fig = plot_correllation_heatmap(corr, None, coeff=True, dark=dark)
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' price-enc corr logret.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' price-enc corr logret.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
     # Correlation returns, logreturns.
@@ -562,7 +571,7 @@ if DO_PRICE_ENCODER:
         ]].corr()
     for dark in [True, False]:
         fig = plot_correllation_heatmap(corr, None, coeff=True, dark=dark)
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' price-enc corr ret+logret.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' price-enc corr ret+logret.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
     # Distribution returns.
@@ -572,7 +581,7 @@ if DO_PRICE_ENCODER:
         ]:
         for dark in [True, False]:
             fig = plot_distribution_histogram(df, [column], dark=dark)
-            fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' distr '+column+'.'+FIG_EXT)
+            fig.savefig(RDM+(DK if dark else LT)+name_6h+' distr '+column+'.'+FIG_EXT)
             #plt.show()
             plt.close(fig)
 
@@ -584,7 +593,7 @@ if DO_WINDOW_SCALER_RAW:
     frames_6h, states_6h = get_frames_and_observations(provider, aggregator_6h,
             episode_steps, lookback_steps, features, datetime_cutoff)
     print('window scaler raw', 'frames', len(frames_6h), 'states', len(states_6h))
-    print_frames_and_observations(frames_6h, states_6h, filename=name_6h+' scaler raw.txt', feature_decimals=6)
+    print_frames_and_observations(frames_6h, states_6h, filename=RDM+name_6h+' scaler raw.txt', feature_decimals=6)
     df = df_from_frames_and_observations(frames_6h, states_6h)
 
 if DO_WINDOW_SCALER_MINMAX:
@@ -595,7 +604,7 @@ if DO_WINDOW_SCALER_MINMAX:
     frames_6h, states_6h = get_frames_and_observations(provider, aggregator_6h,
             episode_steps, lookback_steps, features, datetime_cutoff)
     print('window scaler minmax', 'frames', len(frames_6h), 'states', len(states_6h))
-    print_frames_and_observations(frames_6h, states_6h, filename=name_6h+' scaler-minmax.txt', feature_decimals=6)
+    print_frames_and_observations(frames_6h, states_6h, filename=RDM+name_6h+' scaler-minmax.txt', feature_decimals=6)
     df = df_from_frames_and_observations(frames_6h, states_6h)
     df = df.rename(columns={
         'minmax(64)_1_open': 'minmax open',
@@ -607,12 +616,12 @@ if DO_WINDOW_SCALER_MINMAX:
         fig = plot_features(df, name_6h+' minmax(64) scaling', show_legend=False, dark=dark,
             panes=[['minmax open'], ['minmax high'], ['minmax low'], ['minmax close'],
         ])
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' scaler-minmax.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' scaler-minmax.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
         fig = plot_features_as_candlesticks(df, name_6h, 'minmax(64) scaling',
             'minmax open', 'minmax high', 'minmax low', 'minmax close', dark=dark)
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' scaler-minmax candlesticks.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' scaler-minmax candlesticks.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
     # Correlation minmax scaling with price.
@@ -622,7 +631,7 @@ if DO_WINDOW_SCALER_MINMAX:
         ]].corr(method='pearson') # Pearson correlation coefficient
     for dark in [True, False]:
         fig = plot_correllation_heatmap(corr, None, coeff=True, dark=dark)
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' scaler-minmax corr+p.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' scaler-minmax corr+p.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
     # Correlation minmax scaling.
@@ -631,14 +640,14 @@ if DO_WINDOW_SCALER_MINMAX:
         ]].corr(method='pearson') # Pearson correlation coefficient
     for dark in [True, False]:
         fig = plot_correllation_heatmap(corr, None, coeff=True, dark=dark)
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' scaler-minmax corr.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' scaler-minmax corr.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
     # Distribution minmax scaling.
     for column in ['minmax open', 'minmax high', 'minmax low', 'minmax close']:
         for dark in [True, False]:
             fig = plot_distribution_histogram(df, [column], dark=dark)
-            fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' distr '+column+'.'+FIG_EXT)
+            fig.savefig(RDM+(DK if dark else LT)+name_6h+' distr '+column+'.'+FIG_EXT)
             #plt.show()
             plt.close(fig)
 
@@ -650,7 +659,7 @@ if DO_WINDOW_SCALER_ZSCORE:
     frames_6h, states_6h = get_frames_and_observations(provider, aggregator_6h,
             episode_steps, lookback_steps, features, datetime_cutoff)
     print('window scaler minmax', 'frames', len(frames_6h), 'states', len(states_6h))
-    print_frames_and_observations(frames_6h, states_6h, filename=name_6h+' scaler-zscore.txt', feature_decimals=6)
+    print_frames_and_observations(frames_6h, states_6h, filename=RDM+name_6h+' scaler-zscore.txt', feature_decimals=6)
     df = df_from_frames_and_observations(frames_6h, states_6h)
     df = df.rename(columns={
         'zscore(64)_1_open': 'zscore open',
@@ -662,12 +671,12 @@ if DO_WINDOW_SCALER_ZSCORE:
         fig = plot_features(df, name_6h+' z-score(64) scaling', show_legend=False, dark=dark,
             panes=[['zscore open'], ['zscore high'], ['zscore low'], ['zscore close'],
         ])
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' scaler-zscore.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' scaler-zscore.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
         fig = plot_features_as_candlesticks(df, name_6h, 'z-score(64) scaling',
             'zscore open', 'zscore high', 'zscore low', 'zscore close', dark=dark)
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' scaler-zscore candlesticks.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' scaler-zscore candlesticks.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
     # Correlation zscore scaling with price.
@@ -677,7 +686,7 @@ if DO_WINDOW_SCALER_ZSCORE:
         ]].corr(method='pearson') # Pearson correlation coefficient
     for dark in [True, False]:
         fig = plot_correllation_heatmap(corr, None, coeff=True, dark=dark)
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' scaler-zscore corr+p.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' scaler-zscore corr+p.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
     # Correlation zscore scaling.
@@ -686,14 +695,14 @@ if DO_WINDOW_SCALER_ZSCORE:
         ]].corr(method='pearson') # Pearson correlation coefficient
     for dark in [True, False]:
         fig = plot_correllation_heatmap(corr, None, coeff=True, dark=dark)
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' scaler-zscore corr.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' scaler-zscore corr.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
     # Distribution zscore scaling.
     for column in ['zscore open', 'zscore high', 'zscore low', 'zscore close']:
         for dark in [True, False]:
             fig = plot_distribution_histogram(df, [column], dark=dark)
-            fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' distr '+column+'.'+FIG_EXT)
+            fig.savefig(RDM+(DK if dark else LT)+name_6h+' distr '+column+'.'+FIG_EXT)
             #plt.show()
             plt.close(fig)
 
@@ -705,7 +714,7 @@ if DO_WINDOW_SCALER_ROBUST:
     frames_6h, states_6h = get_frames_and_observations(provider, aggregator_6h,
             episode_steps, lookback_steps, features, datetime_cutoff)
     print('window scaler robust', 'frames', len(frames_6h), 'states', len(states_6h))
-    print_frames_and_observations(frames_6h, states_6h, filename=name_6h+' scaler-robust.txt', feature_decimals=6)
+    print_frames_and_observations(frames_6h, states_6h, filename=RDM+name_6h+' scaler-robust.txt', feature_decimals=6)
     df = df_from_frames_and_observations(frames_6h, states_6h)
     df = df.rename(columns={
         'robust(64)_1_open': 'robust open',
@@ -717,12 +726,12 @@ if DO_WINDOW_SCALER_ROBUST:
         fig = plot_features(df, name_6h+' robust(64) scaling', show_legend=False, dark=dark,
             panes=[['robust open'], ['robust high'], ['robust low'], ['robust close'],
         ])
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' scaler-robust.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' scaler-robust.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
         fig = plot_features_as_candlesticks(df, name_6h, 'robust(64) scaling',
             'robust open', 'robust high', 'robust low', 'robust close', dark=dark)
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' scaler-robust candlesticks.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' scaler-robust candlesticks.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
     # Correlation robust scaling with price.
@@ -732,7 +741,7 @@ if DO_WINDOW_SCALER_ROBUST:
         ]].corr(method='pearson') # Pearson correlation coefficient
     for dark in [True, False]:
         fig = plot_correllation_heatmap(corr, None, coeff=True, dark=dark)
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' scaler-robust corr+p.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' scaler-robust corr+p.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
     # Correlation robust scaling.
@@ -741,14 +750,14 @@ if DO_WINDOW_SCALER_ROBUST:
         ]].corr(method='pearson') # Pearson correlation coefficient
     for dark in [True, False]:
         fig = plot_correllation_heatmap(corr, None, coeff=True, dark=dark)
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' scaler-robust corr.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' scaler-robust corr.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
     # Distribution robust scaling.
     for column in ['robust open', 'robust high', 'robust low', 'robust close']:
         for dark in [True, False]:
             fig = plot_distribution_histogram(df, [column], dark=dark)
-            fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' distr '+column+'.'+FIG_EXT)
+            fig.savefig(RDM+(DK if dark else LT)+name_6h+' distr '+column+'.'+FIG_EXT)
             #plt.show()
             plt.close(fig)
 
@@ -759,40 +768,40 @@ if DO_OHLC_RATIOS:
     frames_6h, states_6h = get_frames_and_observations(provider, aggregator_6h,
             episode_steps, lookback_steps, features, datetime_cutoff)
     print('ohlc ratios', 'frames', len(frames_6h), 'states', len(states_6h))
-    print_frames_and_observations(frames_6h, states_6h, filename=name_6h+' ohlc-ratios.txt', feature_decimals=6)
+    print_frames_and_observations(frames_6h, states_6h, filename=RDM+name_6h+' ohlc-ratios.txt', feature_decimals=6)
     df = df_from_frames_and_observations(frames_6h, states_6h)
     # Price chart ratios.
     for dark in [True, False]:
         fig = plot_features(df, name_6h+' ohlc ratios', show_legend=False, dark=dark,
-            panes=[['ol_hl'], ['cl_hl']
+            panes=[['l_h'], ['ol_hl'], ['cl_hl']
         ])
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' ohlc-ratios.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' ohlc-ratios.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
     # Correlation ratios with price.
     corr = df[[
         'open', 'high', 'low', 'close',
-        'ol_hl', 'cl_hl'
+        'l_h', 'ol_hl', 'cl_hl'
         ]].corr(method='pearson') # Pearson correlation coefficient
     for dark in [True, False]:
         fig = plot_correllation_heatmap(corr, None, coeff=True, dark=dark)
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' ohlc-ratios corr+p.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' ohlc-ratios corr+p.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
     # Correlation ratios.
     corr = df[[
-            'ol_hl', 'cl_hl'
+            'l_h', 'ol_hl', 'cl_hl'
         ]].corr(method='pearson') # Pearson correlation coefficient
     for dark in [True, False]:
         fig = plot_correllation_heatmap(corr, None, coeff=True, dark=dark)
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' ohlc-ratios corr.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' ohlc-ratios corr.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
     # Distribution ratios.
-    for column in ['ol_hl', 'cl_hl']:
+    for column in ['l_h', 'ol_hl', 'cl_hl']:
         for dark in [True, False]:
             fig = plot_distribution_histogram(df, [column], dark=dark)
-            fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' distr '+column+'.'+FIG_EXT)
+            fig.savefig(RDM+(DK if dark else LT)+name_6h+' distr '+column+'.'+FIG_EXT)
             #plt.show()
             plt.close(fig)
 
@@ -822,32 +831,32 @@ if DO_TA_1:
             panes=[['efficiency ratio (10)'], ['market dimension (10)'],
                 ['fractal dimension (10)'], ['stochastic oscillator (10)'], ['Chaikin money flow (20)'],
         ])
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' ta-1.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' ta-1.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
         fig = plot_features(df1, name_6h, show_legend=False, dark=dark,
             panes=[['efficiency ratio (10)']])
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' ta-1 effrati.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' ta-1 effrati.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
         fig = plot_features(df1, name_6h, show_legend=False, dark=dark,
             panes=[['market dimension (10)']])
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' ta-1 markdim.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' ta-1 markdim.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
         fig = plot_features(df1, name_6h, show_legend=False, dark=dark,
             panes=[['fractal dimension (10)']])
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' ta-1 fracdim.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' ta-1 fracdim.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
         fig = plot_features(df1, name_6h, show_legend=False, dark=dark,
             panes=[['stochastic oscillator (10)']])
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' ta-1 stoch.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' ta-1 stoch.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
         fig = plot_features(df1, name_6h, show_legend=False, dark=dark,
             panes=[['Chaikin money flow (20)']])
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' ta-1 cmf.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' ta-1 cmf.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
     df1 = df.rename(columns={
@@ -864,7 +873,7 @@ if DO_TA_1:
         ]].corr(method='pearson') # Pearson correlation coefficient
     for dark in [True, False]:
         fig = plot_correllation_heatmap(corr, None, coeff=True, dark=dark)
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' ta-1 corr+p.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' ta-1 corr+p.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
     # Correlation.
@@ -873,13 +882,13 @@ if DO_TA_1:
         ]].corr(method='pearson') # Pearson correlation coefficient
     for dark in [True, False]:
         fig = plot_correllation_heatmap(corr, None, coeff=True, dark=dark)
-        fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' ta-1 corr.'+FIG_EXT)
+        fig.savefig(RDM+(DK if dark else LT)+name_6h+' ta-1 corr.'+FIG_EXT)
         #plt.show()
         plt.close(fig)
     # Distribution robust scaling.
     for column in ['effrati', 'markdim', 'fracdim', 'stoch', 'cmf']:
         for dark in [True, False]:
             fig = plot_distribution_histogram(df1, [column], dark=dark)
-            fig.savefig(('dark' if dark else 'light')+'/'+name_6h+' distr '+column+'.'+FIG_EXT)
+            fig.savefig(RDM+(DK if dark else LT)+name_6h+' distr '+column+'.'+FIG_EXT)
             #plt.show()
             plt.close(fig)

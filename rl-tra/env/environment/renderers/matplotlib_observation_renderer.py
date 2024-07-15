@@ -186,10 +186,10 @@ class MatplotlibObservationRenderer(Renderer):
         keys = list(observation.keys())
         #for key in keys:
         #    print(key, len(observation[key]))
-        keys = [key for key in keys if key not in \
-            ('open_180', 'close_180', 'high_180', 'low_180', 'volume_180',
-            'zscore196_high_180', 'zscore180_low_196', 'zscore196_open_196',
-            'yday_time_start_180', 'wday_time_start_180')]
+        #keys = [key for key in keys if key not in \
+        #    ('open_180', 'close_180', 'high_180', 'low_180', 'volume_180',
+        #    'zscore196_high_180', 'zscore180_low_196', 'zscore196_open_196',
+        #    'yday_time_start_180', 'wday_time_start_180')]
         filtered_observation = {key: observation[key] for key in keys}
         self.df_observation = pd.DataFrame(filtered_observation)
         self.df_observation.columns = \

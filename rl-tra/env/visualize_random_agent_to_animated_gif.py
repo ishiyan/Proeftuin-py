@@ -92,9 +92,10 @@ env = Environment(
     warm_up_duration=None,
     episode_max_duration=None,
     render_mode='rgb_array',
+    render_observations=False,
     initial_balance=10000,
-    episode_max_steps=128#196
-)
+    episode_max_steps=196
+    )
 env = RecordAnimatedGIF(
     env,
     output_folder='./visualizations/random_agent/',
@@ -102,12 +103,10 @@ env = RecordAnimatedGIF(
     max_gif_frames=100000,
     record_episodes_end=True,
     record_episodes_steps=True,
-    record_episodes_delta=1,
-    record_steps_delta=1,
-    separate_steps_file_per_episode=False,
     fps_episode_end=0.5,
     fps_episode_step=3,
-)
+    vec_env_index=None
+    )
 # --------------------------------- loop
 for episode in range(10):
     step = 0

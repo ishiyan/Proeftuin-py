@@ -16,8 +16,8 @@ class Env01(Environment):
                  symbol: Union[str, Sequence[str]]='ETHUSDT',
                  time_frame='1m',
                  scale_method='zscore',
-                 scale_period=196,
-                 copy_period=196,
+                 scale_period=180,
+                 copy_period=180,
                  episode_max_steps=128,
                  initial_balance=10000,
                  action_scheme: Optional[ActionScheme]=None,
@@ -38,6 +38,7 @@ class Env01(Environment):
             action_scheme: None, BuySellHoldCloseAction()
             reward_scheme: None, BalanceReturnReward()
             render_mode: None, 'ansi', 'rgb_array'
+            render_observations bool: False
             vec_env_index: None, int
         """
         # --------------------------------- data
@@ -80,16 +81,17 @@ class Env01(Environment):
             OhlcRatios(write_to='frame'),
             TimeEncoder(source=['time_start'], yday=True, wday=True, tday=True, write_to='frame'),
             CopyPeriod(source=[
-                (f'{scale_method}{scale_period}_open', -math.inf, math.inf),
-                (f'{scale_method}{scale_period}_high', -math.inf, math.inf),
-                (f'{scale_method}{scale_period}_low', -math.inf, math.inf),
+                #(f'{scale_method}{scale_period}_open', -math.inf, math.inf),
+                #(f'{scale_method}{scale_period}_high', -math.inf, math.inf),
+                #(f'{scale_method}{scale_period}_low', -math.inf, math.inf),
                 (f'{scale_method}{scale_period}_close', -math.inf, math.inf),
                 (f'{scale_method}{scale_period}_volume', -math.inf, math.inf),
+                ('l_h', 0.0, 1.0),
                 ('ol_hl', 0.0, 1.0),
                 ('cl_hl', 0.0, 1.0),
-                ('yday_time_start', 0.0, 1.0),
-                ('wday_time_start', 0.0, 1.0),
                 ('tday_time_start', 0.0, 1.0),
+                ('wday_time_start', 0.0, 1.0),
+                #('yday_time_start', 0.0, 1.0),
             ], copy_period=copy_period)
         ]
         super().__init__(

@@ -9,10 +9,10 @@ name = 'ppo_01_xxx'
 dir = f'./sb3/{name}-new/'
 
 start_iteration_number = 1
-total_iterations = 2 #1000
+total_iterations = 100#1000
 
 episode_max_steps = 180
-learn_episodes = 10#1000#10000
+learn_episodes = 10000#100000#10#1000#10000
 
 evaluate_episodes_every_iteration=8 # Set to 0 to disable
 verbose=1
@@ -30,7 +30,7 @@ def create_env(which='subproc', iteration: int=1, eval: bool=False):
         return create_vec_env01(vec_env=which, symbol=symbol,
             episode_max_steps=episode_max_steps, name=name, dir=dir,
             iteration=iteration, eval=eval, render=render,
-            vectorized_render=True, vectorized_monitor=True,
+            vectorized_render=False, vectorized_monitor=True,
             max_envs=4, verbose=verbose)
     else:
         return create_single_env01(symbol=symbol,

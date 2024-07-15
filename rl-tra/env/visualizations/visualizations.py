@@ -142,20 +142,15 @@ def plot_correlation_heatmap(df,
         figsize=(8, 8)
         ) -> Figure:
     fig, ax = plt.subplots(dpi=dpi, layout='constrained', figsize=figsize)
-    yaxis = ax.get_yaxis()
-    print(yaxis)
-
     if dark:
         fig.set_facecolor(D_FIG)
     # https://matplotlib.org/stable/users/explain/colors/colormaps.html
     if cmap is None:
         cmap = 'rainbow_r' # rainbow_r Spectral coolwarm_r bwr_r RdYlBu RdYlGn
+    df = df.corr()
     cax = ax.imshow(df, cmap=cmap, interpolation='nearest', vmin=-1, vmax=1, aspect='auto')
-
     cb = fig.colorbar(cax)
     cb.set_ticks([-1, -0.5, 0, 0.5, 1])
-    yaxis = cb.ax.get_yaxis()
-    print(yaxis)
     if dark:
         cb.set_label('Spearman correlation', fontsize='small', color=D_TIT)
         cb.ax.tick_params(labelsize='small', colors=D_TXT)
@@ -167,15 +162,9 @@ def plot_correlation_heatmap(df,
             ax.set_title(title, color=D_TIT)
         else:
             ax.set_title(title)
-    ax.set_xticks(range(len(df.columns)))
-    ax.set_yticks(range(len(df.columns)))
-    yaxis = ax.get_yaxis()
-    print(yaxis)
-    tl=ax.get_yticklines()
-    print(tl)
-    ti=ax.get_yticks()
-    print(ti)
-
+    rlen = range(len(df.columns))
+    ax.set_xticks(rlen)
+    ax.set_yticks(rlen)
     if dark:
         ax.tick_params(axis='x', colors=D_TXT)
         ax.set_xticklabels(df.columns, rotation=45, fontsize='small', color=D_TIT)
@@ -187,50 +176,9 @@ def plot_correlation_heatmap(df,
     if coeff:
         if coeff_color is None:
             coeff_color = 'black'
-        for i in range(len(df.columns)):
-            for j in range(len(df.columns)):
+        for i in rlen:
+            for j in rlen:
                 ax.text(j, i, f'{df.iloc[i, j]:.{decimals}f}', ha='center', va='center',
-                        fontsize='small', color=coeff_color)
-    return fig
-
-def plot_correllation_heatmap(df, title=None, cmap=None, coeff=False, coeff_color=None,
-                                                        dark=True, feature_decimals=2):
-    fig, ax = plt.subplots(dpi=120, layout='constrained')
-    if dark:
-        fig.set_facecolor(D_FIG)
-    # https://matplotlib.org/stable/users/explain/colors/colormaps.html
-    if cmap is None:
-        cmap = 'rainbow_r' # rainbow_r Spectral coolwarm_r bwr_r RdYlBu RdYlGn
-    cax = ax.imshow(df, cmap=cmap, interpolation='nearest', vmin=-1, vmax=1)
-    cb = fig.colorbar(cax)
-    cb.set_ticks([-1, -0.5, 0, 0.5, 1])
-    if dark:
-        cb.set_label('Spearman correlation', fontsize='small', color=D_TIT)
-        cb.ax.tick_params(labelsize='small', colors=D_TXT)
-    else:
-        cb.set_label('Spearman correlation', fontsize='small')
-        cb.ax.tick_params(labelsize='small')
-    if title is not None:
-        if dark:
-            ax.set_title(title, color=D_TIT)
-        else:
-            ax.set_title(title, color=D_TIT)
-    ax.set_xticks(range(len(df.columns)))
-    ax.set_yticks(range(len(df.columns)))
-    if dark:
-        ax.tick_params(axis='x', colors=D_TXT)
-        ax.set_xticklabels(df.columns, rotation=45, fontsize='small', color=D_TIT)
-        ax.tick_params(axis='y', colors=D_TXT)
-        ax.set_yticklabels(df.columns, fontsize='small', color=D_TIT)
-    else:
-        ax.set_xticklabels(df.columns, rotation=45, fontsize='small')
-        ax.set_yticklabels(df.columns, fontsize='small')
-    if coeff:
-        if coeff_color is None:
-            coeff_color = 'black'
-        for i in range(len(df.columns)):
-            for j in range(len(df.columns)):
-                ax.text(j, i, f'{df.iloc[i, j]:.{feature_decimals}f}', ha='center', va='center',
                         fontsize='small', color=coeff_color)
     return fig
 
