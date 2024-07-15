@@ -30,7 +30,7 @@ def create_env(which='subproc', iteration: int=1, eval: bool=False):
         return create_vec_env01(vec_env=which, symbol=symbol,
             episode_max_steps=episode_max_steps, name=name, dir=dir,
             iteration=iteration, eval=eval, render=render,
-            vectorized_render=False, vectorized_monitor=True,
+            vectorized_render=True, vectorized_monitor=True,
             max_envs=4, verbose=verbose)
     else:
         return create_single_env01(symbol=symbol,

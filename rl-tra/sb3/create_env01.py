@@ -58,7 +58,7 @@ def _create_env01(
         copy_period = episode_max_steps,
         episode_max_steps=episode_max_steps,
         render_mode=render_mode,
-        render_observations=True,
+        render_observations=False,
         vec_env_index=vec_env_index
         )
     if render == 'gif':
