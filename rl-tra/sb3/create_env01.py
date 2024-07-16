@@ -5,7 +5,7 @@ import multiprocessing
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecMonitor
 
-from env import Env01, CsvFileLogger, RecordAnimatedGIF
+from env import Env01, CsvFileLogger, RecordAnimatedGIF, BuySellHoldCloseAction
 from sb3 import SaveOnBestTrainingRewardCallback, VecCsvFileLogger, VecRecordAnimatedGIF
 
 def _create_dir_and_prefix(dir: str, iteration: int, name: str, eval: bool):
@@ -54,9 +54,10 @@ def _create_env01(
     env = Env01(
         symbol=symbol,
         time_frame='1m', # '1m','1h'
-        scale_period = episode_max_steps,
-        copy_period = episode_max_steps,
+        scale_period=episode_max_steps,
+        copy_period=episode_max_steps,
         episode_max_steps=episode_max_steps,
+        action_scheme=BuySellHoldCloseAction(allow_short_positions=False),
         render_mode=render_mode,
         render_observations=False,
         vec_env_index=vec_env_index
