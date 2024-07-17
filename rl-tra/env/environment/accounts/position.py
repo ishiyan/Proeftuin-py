@@ -1,8 +1,8 @@
-from enum import Enum
 from typing import List, Tuple, Union, Any
 from numbers import Real
 import datetime as dt
 
+from .position_side import PositionSide
 from .performance_record import PerformanceRecord
 from .execution_side import ExecutionSide
 from .execution import Execution
@@ -10,29 +10,19 @@ from .roundtrips.matching import RoundtripMatching
 from .roundtrips.roundtrip import Roundtrip
 from .roundtrips.performance import RoundtripPerformance
 
-class PositionSide(Enum):
-    """Enumerates the sides of a position."""
-
-    LONG = 'long'
-    """The long position."""
-
-    SHORT = 'short'
-    """The short position."""
-
 class Position(object):
     """
-    Portfoloo position
+    Portfoloo position.
     
-    Parameters
-    ----------
-    margin_per_unit : Real
-        The margin per unit of the position instrument.
-        commission : Union[Real, Callable[[str, Real, Real], Real]]
-        The commission per unit of the instrument.
+    Args:
+        margin_per_unit Real:
+            The margin per unit of the position instrument.
+        roundtrip_matching RoundtripMatching:
+            The roundtrip matching method.
     """
     def __init__(self,
-                 margin_per_unit: Real = 0,
-                 roundtrip_matching: RoundtripMatching = RoundtripMatching.FIFO):
+                 margin_per_unit: Real=0,
+                 roundtrip_matching: RoundtripMatching=RoundtripMatching.FIFO):
         self.margin_per_unit = margin_per_unit
         self.roundtrip_matching = roundtrip_matching
 
@@ -138,21 +128,27 @@ class Position(object):
         C - close current quantity
         R - revert current quantity (changing sign)
         ```
-        Parameters
-        ----------
-        datetime : Union[Real, dt.datetime, dt.date, Any]
-            The date and time of an associated execution report
-            as assigned by the broker.
-
-        :param operation: string 'B' - buy, or 'S' - sell
-        :param quantity: positive number, > 0, may have floating point
-        :param price: number, may have floating point
-        :param commission: number, may have floating point
-        :return: updated balance of account
+        Args:
+            datetime Union[Real, dt.datetime, dt.date, Any]:
+                The date and time of an associated execution report
+                as assigned by the broker.
+            operation string:
+                'B' - buy, or 'S' - sell
+            quantity:
+                positive number, > 0, may have floating point
+            price:
+                number, may have floating point
+            commission:
+                number, may have floating point
+        return:
+            updated balance of account
         """
-        assert isinstance(quantity, Real) and (quantity > 0), ValueError('Position:update: Invalid quantity')
-        assert isinstance(price, Real), ValueError('Account:update: Invalid price')
-        assert isinstance(commission, Real), ValueError('Account:update: Invalid commission')
+        assert isinstance(quantity, Real) and (quantity > 0), \
+            ValueError('Position:update: Invalid quantity')
+        assert isinstance(price, Real), \
+            ValueError('Account:update: Invalid price')
+        assert isinstance(commission, Real), \
+            ValueError('Account:update: Invalid commission')
         
         quantity_signed = quantity if (side == ExecutionSide.BUY) else -quantity
         new_quantity = self.quantity_signed + quantity_signed
