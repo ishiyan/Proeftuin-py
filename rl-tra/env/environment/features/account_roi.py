@@ -22,17 +22,17 @@ class AccountROI(Feature):
     def process(self, frames: Sequence[Frame], state: OrderedDict):
         if self.account is None:
             raise ValueError('this feature requires an account to be set by the environment')
-        if len(self.account.report.returns_on_investments) == 0:
+        if len(self.account.performance.roundtrips.returns_on_investments) == 0:
             roi = 0.0
             roi_zscore = 0.0
         else:
-            roi = self.account.report.returns_on_investments[-1]
+            roi = self.account.performance.roundtrips.returns_on_investments[-1]
             if roi is None:
                 roi = 0.0
-            roi_mean = self.account.report.roi_mean()
+            roi_mean = self.account.performance.roundtrips.roi_mean()
             if roi_mean is None:
                 roi_mean = 0.0
-            roi_std = self.account.report.roi_std()
+            roi_std = self.account.performance.roundtrips.roi_std()
             if roi_std is None:
                 roi_std = 0.0
             if roi_std > 1e-8:

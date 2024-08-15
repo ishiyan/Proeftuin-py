@@ -19,8 +19,8 @@ class CsvRenderer(Renderer):
         # roi = (quantity_signed * (price - average_price) - commission) /
         #       (quantity_signed * average_price)
         
-        # Time weighted return (TWR) of an account:
-        # twr = (previous_twr + 1) * (balance / previous_balance) - 1
+        # Cumulative return of an account:
+        # cr = (previous_twr + 1) * (balance / previous_balance) - 1
 
         # Rate of return (ROR) of an account:
         # net_profit = SUM(quantity_signed * (price - average_price) - commission)
@@ -30,7 +30,7 @@ class CsvRenderer(Renderer):
             'open,high,low,close,volume,' \
             'position delta,position,balance,initial balance,account halted,' \
             'net profit,total commission,max drawdown pct,' \
-            'time weighted return,rate of return,' \
+            'cumulative return,rate of return,' \
             'return on investment,return on investment mean,return on investment std,' \
             'sharpe ratio,sortino ratio,calmar ratio,' \
             'roundtrip winning net pnl,roundtrip loosing net pnl,' \
@@ -64,7 +64,7 @@ class CsvRenderer(Renderer):
         self.net_profit = None
         self.total_commission = None
         self.max_drawdown_percent = None
-        self.time_weighted_return = None
+        self.cumulative_return = None
         self.rate_of_return = None
         self.return_on_investment = None
         self.return_on_investment_mean = None
@@ -74,10 +74,10 @@ class CsvRenderer(Renderer):
         self.calmar_ratio = None
         self.roundtrip_winning_net_pnl = None
         self.roundtrip_loosing_net_pnl = None
-        self.roundtrip_net_profit_pnl_percentage = None
-        self.roundtrip_net_winning_percentage = None
-        self.roundtrip_net_loosing_percentage = None
-        self.roundtrip_average_net_winning_loosing_percentage = None
+        self.roundtrip_net_profit_pnl_ratio = None
+        self.roundtrip_net_winning_ratio = None
+        self.roundtrip_net_loosing_ratio = None
+        self.roundtrip_average_net_winning_loosing_ratio = None
         self.roundtrip_max_consecutive_net_winners = None
         self.roundtrip_max_consecutive_net_loosers = None
         self.roundtrip_average_maximum_adverse_excursion = None
@@ -90,6 +90,8 @@ class CsvRenderer(Renderer):
             account: Account, provider: Provider, aggregator: TradeAggregator,
             frames: List[Frame], observation: OrderedDict):
         self.account = account
+        self.performance = account.performance.daily
+        self.performance_roundtrips = account.performance.roundtrips
 
         self.provider_name = provider.name
         self.aggregator_name = aggregator.name
@@ -98,7 +100,6 @@ class CsvRenderer(Renderer):
         self.total_reward = 0.0
         self.position = account.position.quantity_signed
         self.initial_balance = account.initial_balance
-        self.time_weighted_return = 0.0
 
         self._append_step(frames[-1], 0.0)
 
@@ -124,7 +125,7 @@ class CsvRenderer(Renderer):
             f'{self.net_profit},' \
             f'{self.total_commission},' \
             f'{self.max_drawdown_percent},' \
-            f'{self.time_weighted_return},' \
+            f'{self.cumulative_return},' \
             f'{self.rate_of_return},' \
             f'{self.return_on_investment},' \
             f'{self.return_on_investment_mean},' \
@@ -134,10 +135,10 @@ class CsvRenderer(Renderer):
             f'{self.calmar_ratio},' \
             f'{self.roundtrip_winning_net_pnl},' \
             f'{self.roundtrip_loosing_net_pnl},' \
-            f'{self.roundtrip_net_profit_pnl_percentage},' \
-            f'{self.roundtrip_net_winning_percentage},' \
-            f'{self.roundtrip_net_loosing_percentage},' \
-            f'{self.roundtrip_average_net_winning_loosing_percentage},' \
+            f'{self.roundtrip_net_profit_pnl_ratio},' \
+            f'{self.roundtrip_net_winning_ratio},' \
+            f'{self.roundtrip_net_loosing_ratio},' \
+            f'{self.roundtrip_average_net_winning_loosing_ratio},' \
             f'{self.roundtrip_max_consecutive_net_winners},' \
             f'{self.roundtrip_max_consecutive_net_loosers},' \
             f'{self.roundtrip_average_maximum_adverse_excursion},' \
@@ -165,46 +166,43 @@ class CsvRenderer(Renderer):
         position = self.account.position.quantity_signed
         self.position_delta = position - self.position
         self.position = position
-
-        balance = self.account.balance
-        balance_return = (balance / self.balance - 1.0) \
-            if (self.balance != 0 and self.balance is not None) else 0.0
-        self.balance = balance
+        self.balance = self.account.balance
         self.halted = self.account.is_halted
-        self.net_profit = self.account.report.net_profit
-        self.total_commission = self.account.report.total_commission
-        self.max_drawdown_percent = self.account.report.max_drawdown_percent if \
-            self.account.report.max_drawdown_percent is not None else 0.0
 
-        twr = (self.time_weighted_return + 1.0) * (balance_return + 1.0)
-        self.time_weighted_return = twr - 1.0
+        p = self.performance
+        pr = self.performance_roundtrips
 
-        self.rate_of_return = self.account.report.ror
-        self.return_on_investment = self.account.report.returns_on_investments[-1] \
-            if len(self.account.report.returns_on_investments) > 0 else 0.0
-        self.return_on_investment_mean = self.account.report.roi_mean \
-            if self.account.report.roi_mean is not None else 0.0
-        self.return_on_investment_std = self.account.report.roi_std \
-            if self.account.report.roi_std is not None else 0.0
+        self.net_profit = pr.net_profit_ratio
+        self.total_commission = pr.total_commission
+        v = p._drawdowns_cumulative_min
+        self.max_drawdown_percent = v if v is not None else 0
+        self.cumulative_return = p.cumulative_return
 
-        val = self.account.report.sharpe_ratio
-        self.sharpe_ratio = val if val is not None else 0.0
-        val = self.account.report.sortino_ratio
-        self.sortino_ratio = val if val is not None else 0.0
-        val = self.account.report.calmar_ratio
-        self.calmar_ratio = val if val is not None else 0.0
+        self.rate_of_return = self.account.performance.rate_of_return
+        v = pr.returns_on_investments
+        self.return_on_investment = v[-1] if len(v) > 0 else 0
+        v = pr.roi_mean
+        self.return_on_investment_mean = v if v is not None else 0
+        v = pr.roi_std
+        self.return_on_investment_std = v if v is not None else 0
 
-        perf = self.account.position.roundtrip_performance
-        self.roundtrip_winning_net_pnl = perf.winning_net_pnl
-        self.roundtrip_loosing_net_pnl = perf.loosing_net_pnl
-        self.roundtrip_net_profit_pnl_percentage = perf.net_profit_pnl_percentage
-        self.roundtrip_net_winning_percentage = perf.net_winning_percentage / 100.0
-        self.roundtrip_net_loosing_percentage = perf.net_loosing_percentage / 100.0
-        self.roundtrip_average_net_winning_loosing_percentage = perf.average_net_winning_loosing_percentage / 100.0
-        self.roundtrip_max_consecutive_net_winners = perf.max_consecutive_net_winners
-        self.roundtrip_max_consecutive_net_loosers = perf.max_consecutive_net_loosers
-        self.roundtrip_average_maximum_adverse_excursion = perf.average_maximum_adverse_excursion / 100.0
-        self.roundtrip_average_maximum_favorable_excursion = perf.average_maximum_favorable_excursion / 100.0
-        self.roundtrip_average_entry_efficiency = perf.average_entry_efficiency / 100.0
-        self.roundtrip_average_exit_efficiency = perf.average_exit_efficiency / 100.0
-        self.roundtrip_average_total_efficiency = perf.average_total_efficiency / 100.0
+        v = p.sharpe_ratio()
+        self.sharpe_ratio = v if v is not None else 0
+        v = p.sortino_ratio()
+        self.sortino_ratio = v if v is not None else 0
+        v = p.calmar_ratio()
+        self.calmar_ratio = v if v is not None else 0
+
+        self.roundtrip_winning_net_pnl = pr.winning_net_pnl
+        self.roundtrip_loosing_net_pnl = pr.loosing_net_pnl
+        self.roundtrip_net_profit_pnl_ratio = pr.net_profit_pnl_ratio
+        self.roundtrip_net_winning_ratio = pr.net_winning_ratio
+        self.roundtrip_net_loosing_ratio = pr.net_loosing_ratio
+        self.roundtrip_average_net_winning_loosing_ratio = pr.average_net_winning_loosing_ratio
+        self.roundtrip_max_consecutive_net_winners = pr.max_consecutive_net_winners
+        self.roundtrip_max_consecutive_net_loosers = pr.max_consecutive_net_loosers
+        self.roundtrip_average_maximum_adverse_excursion = pr.average_maximum_adverse_excursion / 100
+        self.roundtrip_average_maximum_favorable_excursion = pr.average_maximum_favorable_excursion / 100
+        self.roundtrip_average_entry_efficiency = pr.average_entry_efficiency / 100
+        self.roundtrip_average_exit_efficiency = pr.average_exit_efficiency / 100
+        self.roundtrip_average_total_efficiency = pr.average_total_efficiency / 100

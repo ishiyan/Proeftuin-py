@@ -3,12 +3,10 @@ from numbers import Real
 import datetime as dt
 
 from .position_side import PositionSide
-from .performance_record import PerformanceRecord
 from .execution_side import ExecutionSide
 from .execution import Execution
 from .roundtrips.matching import RoundtripMatching
 from .roundtrips.roundtrip import Roundtrip
-from .roundtrips.performance import RoundtripPerformance
 
 class Position(object):
     """
@@ -26,81 +24,51 @@ class Position(object):
         self.margin_per_unit = margin_per_unit
         self.roundtrip_matching = roundtrip_matching
 
-        self.datetime = None
-        self.side = PositionSide.LONG
-        self.quantity_signed = 0
-        self.average_price = None
-        self.commission = 0
-        self.roi = 0
-        #######
-        self.cash_flow = 0
-        self.debt = 0
-        self.margin = 0
+        self.quantity_signed: float = 0
+        self.debt: float = 0
+        self.margin: float = 0
         self.executions: List[Execution] = []
-        self.roundtrip_performance = RoundtripPerformance()
-        self.entry_amount = 0
-        
+
+    @property
+    def side(self):
+        return PositionSide.SHORT if self.quantity_signed < 0 else PositionSide.LONG
+
     def reset(self):
-        self.datetime = None
-        self.side = PositionSide.LONG
         self.quantity_signed = 0
-        self.average_price = None
-        self.commission = 0
-        self.roi = 0
-        #######
-        self.cash_flow = 0
         self.debt = 0
         self.margin = 0
-        self.executions = []
-        self.roundtrip_performance = RoundtripPerformance()
-        self._entry_amount = 0
+        self.executions.clear()
         
     def value(self, price):
-        if (self.quantity_signed != 0) and (self.average_price != 0):
-            self.roi = self.quantity_signed * (price - self.average_price) / abs(self.quantity_signed * self.average_price)
-        else:
-            self.roi = 0
         return self.quantity_signed * price
+
+    def update_performance(self, price_high: Real, price_low: Real):
+        for e in self.executions:
+            if e.unrealized_quantity != 0:
+                if e.unrealized_price_high < price_high:
+                    e.unrealized_price_high = price_high
+                if e.unrealized_price_low > price_low:
+                    e.unrealized_price_low = price_low
                 
     def close(self,
                 datetime: Union[Real, dt.datetime, dt.date, Any],
                 price: Real,
                 commission: Real = 0,
-                notes: str = None) -> Tuple[PerformanceRecord, float]:
+                notes: str = None) -> Tuple[List[Roundtrip], float]:
         if self.quantity_signed == 0:
-            return None, 0
-
-        self.commission += commission
-        record = PerformanceRecord(
-            operation = 1 if (self.quantity_signed > 0) else -1,
-            amount = abs(self.quantity_signed),
-            enter_date = self.datetime,
-            enter_price = self.average_price,
-            exit_date = datetime,
-            exit_price = price,
-            result = self.quantity_signed * (price - self.average_price) - self.commission,
-            commission = self.commission,
-            notes = notes
-        )        
+            return [], 0
+        cash_flow = self.quantity_signed * price - commission
         side = ExecutionSide.SELL if (self.quantity_signed > 0) else ExecutionSide.BUY
         ex = Execution(datetime=datetime, side=side, quantity=abs(self.quantity_signed),
             price=price, commission=commission, margin_per_unit=self.margin_per_unit)
         rts = self._update_execution_pnl_and_match_roundtrips(ex, self.quantity_signed)
-        for r in rts:
-            self.roundtrip_performance.add_roundtrip(r)
-        self.executions.append(ex)
-        #self.quantity_signed = 0
-        #_ = self._update_margin_and_debt(ex)
-
-        cash_flow = self.quantity_signed * price - commission
-        self.datetime = None
         self.quantity_signed = 0
-        self.average_price = None
-        self.commission = 0
-        self.roi = 0
         self.margin = 0
         self.debt = 0
-        return record, cash_flow # self.cash = self.cash + cash_flow
+        for e in self.executions:
+            e.unrealized_quantity = 0
+        self.executions.append(ex)
+        return rts, cash_flow
 
     def execute(self,
                datetime: Union[Real, dt.datetime, dt.date, Any],
@@ -108,7 +76,7 @@ class Position(object):
                quantity: Real,
                price: Real,
                commission: Real = 0,
-               notes: str = None) -> Tuple[PerformanceRecord, float]:
+               notes: str = None) -> Tuple[List[Roundtrip], float]:
         """
         Update position by new operation.
         Each execution specifies datetime, side, quantity, price and commission.
@@ -126,8 +94,12 @@ class Position(object):
         I - increase current quantity
         D - decrease current quantity
         C - close current quantity
-        R - revert current quantity (changing sign)
+        R - revert current quantity (changing side)
         ```
+        Note that reverting current quantity (changing side) in a single
+        execution is prohibited by most brokers.
+        This implementation will throw exception in this case.
+
         Args:
             datetime Union[Real, dt.datetime, dt.date, Any]:
                 The date and time of an associated execution report
@@ -142,87 +114,52 @@ class Position(object):
                 number, may have floating point
         return:
             updated balance of account
-        """
-        assert isinstance(quantity, Real) and (quantity > 0), \
-            ValueError('Position:update: Invalid quantity')
-        assert isinstance(price, Real), \
-            ValueError('Account:update: Invalid price')
-        assert isinstance(commission, Real), \
-            ValueError('Account:update: Invalid commission')
-        
+        """        
         quantity_signed = quantity if (side == ExecutionSide.BUY) else -quantity
         new_quantity = self.quantity_signed + quantity_signed
         
         ex = Execution(datetime=datetime, side=side, quantity=quantity,
             price=price, commission=commission, margin_per_unit=self.margin_per_unit)
 
-        if self.quantity_signed == 0: # NEW
-            self.datetime = datetime
-            #self.side = PositionSide.SHORT if quantity_signed < 0 else PositionSide.LONG
+        if self.quantity_signed == 0:
+            # `S`, new position
             self.quantity_signed = quantity_signed
-            self.average_price = price
-            self.commission += commission
             self.margin = ex.margin
             self.debt = ex.debt
-            # ex.cash_flow = - quantity_signed * price
-            self.cash_flow = ex.cash_flow - ex.commission
-            self.entry_amount = ex.amount
+            self.executions.append(ex)
+            # This is equal to
+            # `ex.cash_flow - ex.commission`
+            # since
+            # `ex.cash_flow = - quantity_signed * price`
+            return [], - quantity_signed * price - commission
+
+        elif new_quantity == 0:
+            # `C`, close position
+            cash_flow = self.quantity_signed * price - commission
+            rts = self._update_execution_pnl_and_match_roundtrips(ex, self.quantity_signed)
+            self.quantity_signed = 0
+            self.margin = 0
+            self.debt = 0
             for e in self.executions:
                 e.unrealized_quantity = 0
             self.executions.append(ex)
-            return None, - quantity_signed * price - commission # ex.cash_flow - ex.commission
+            return rts, cash_flow
 
-        elif new_quantity == 0: # CLOSE
-            return self.close(datetime, price, commission, notes)
-            
-        elif self.quantity_signed * quantity_signed > 0: # INCREASE
+        elif self.quantity_signed * new_quantity < 0:
+            # `R`, reverting side in a single execution
+            ValueError('Reverting sides in a single execution is prohibites: ' \
+                       f'from {self.quantity_signed} to {new_quantity}')
+
+        else:
+            # elif self.quantity_signed * quantity_signed > 0:
+            # `I`, increase position on the same side
+            # elif self.quantity_signed * new_quantity > 0:
+            # `D`, decrease position on the same side
             rts = self._update_execution_pnl_and_match_roundtrips(ex, self.quantity_signed)
-            for r in rts:
-                self.roundtrip_performance.add_roundtrip(r)
             self.quantity_signed = new_quantity
             _ = self._update_margin_and_debt(ex)
             self.executions.append(ex)
-            self.cash_flow += ex.cash_flow - ex.commission
-            self.average_price = (self.quantity_signed * self.average_price + quantity_signed * price) / new_quantity
-            self.commission += commission
-            return None, - quantity_signed * price - commission
-
-        elif self.quantity_signed * new_quantity > 0: # DECREASE
-            sign = 1 if (self.quantity_signed > 0) else -1
-            record = PerformanceRecord(
-                operation = sign,
-                amount = quantity_signed,
-                enter_date = self.datetime,
-                enter_price = self.average_price,
-                exit_date = datetime,
-                exit_price = price,
-                result = sign * quantity * (price - self.average_price) - commission,
-                commission = commission,
-                notes = notes
-            )
-            rts = self._update_execution_pnl_and_match_roundtrips(ex, self.quantity_signed)
-            for r in rts:
-                self.roundtrip_performance.add_roundtrip(r)
-            self.quantity_signed = new_quantity
-            _ = self._update_margin_and_debt(ex)
-            self.executions.append(ex)
-            # Note: we do not increase commission in this case!
-            return record, - quantity_signed * price - commission
-
-        elif self.quantity_signed * new_quantity < 0: # REVERTED
-            report, cf = self.close(datetime, price, 0, notes) # ??? commission zero ???
-            rts = self._update_execution_pnl_and_match_roundtrips(ex, self.quantity_signed)
-            for r in rts:
-                self.roundtrip_performance.add_roundtrip(r)
-            self.quantity_signed = new_quantity
-            _ = self._update_margin_and_debt(ex)
-            self.executions.append(ex)
-            self.datetime = datetime
-            self.commission += commission
-            self.average_price = price
-            return report, cf - new_quantity * price - commission
-
-        return None, 0
+            return rts, - quantity_signed * price - commission
 
     def _update_execution_pnl_and_match_roundtrips(self,
         ex: Execution, qty_signed: float) -> List[Roundtrip]:
@@ -336,11 +273,6 @@ class Position(object):
     def __str__(self):
         return (
             f'{self.__class__.__name__}{{'
-            f'datetime={str(self.datetime)}, '
             f'quantity_signed={self.quantity_signed}, '
-            f'average_price={self.average_price}, '
-            f'commission={self.commission}, '
-            f'roi={self.roi}, '
-            f'cash_flow={self.cash_flow}, '
             f'debt={self.debt}, '
             f'margin={self.margin}}}')

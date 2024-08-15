@@ -112,7 +112,7 @@ def run(provider: Provider, aggregator: TradeAggregator, number_of_frames: int,
     plt.close(fig)
 
 symbol = 'ETHUSDT'
-dir = 'D:/data/binance_monthly_trades/'
+dir = 'data/binance_monthly_trades/'
 provider = BinanceMonthlyTradesProvider(data_dir = dir, symbol = symbol,
                 date_from = date(2024, 5, 1), date_to = date(2024, 5, 2))
 

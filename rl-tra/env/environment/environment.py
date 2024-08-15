@@ -16,6 +16,7 @@ from .rewards import RewardScheme
 from .features import Feature, TradesFeature
 from .broker import Broker
 from .accounts import Account,DayCountConvention
+
 from .renderers import CsvRenderer, MatplotlibPriceRenderer, MatplotlibObservationRenderer
 
 def binance_commission(operation: str, amount: Real, price: Real) -> Real:
@@ -35,8 +36,12 @@ class Environment(Broker, gym.Env):
         features_pipeline: Optional[Sequence[Feature]] = None,
         initial_balance: Real = 100000,
         halt_account_if_negative_balance: bool=True,
-        risk_free_rate: Real = 0,
-        day_count_convention: Literal['raw', 'actual/365', 'actual/360', '30/360'] = 'raw',
+        annual_risk_free_rate: Real = 0,
+        annual_target_return: Real = 0,
+        day_count_convention: Literal['raw','30/360 us','30/360 us eom',
+            '30/360 us nasd','30/360 eu','30/360 eu2','30/360 eu3',
+            '30/360 eu+','30/365','act/360','act/365 fixed','act/365 nonleap',
+            'act/act excel','act/act isda','act/act afb'] = 'raw',
         agent_order_delay: Union[Real, timedelta] = 3,
         broker_order_delay: Union[Real, timedelta] = 0.5,
         order_luck: float = 1.0,
@@ -75,11 +80,18 @@ class Environment(Broker, gym.Env):
                 Default: 100000
             halt_account_if_negative_balance bool:
                 Specify whether to halt the account if balance becomes negative.
-            risk_free_rate Real:
-                Specify the risk free rate to use in the account performance
-                calculations.
+            annual_risk_free_rate Real:
+                Specify the annual risk free rate (1% is 0.01) to use
+                in the account performance calculations.
                 Default: 0.0
-            day_count_convention Literal['raw', 'actual/365', 'actual/360', '30/360']:
+            annual_target_return Real:
+                Specify the annual rarget return (1% is 0.01) to use
+                in the account performance calculations.
+                
+                in context of Sortino ratio, it is the Minimum Acceptable
+                Return (MAR, or Desired Target Return (DTR).
+                Default: 0.0
+            day_count_convention Literal['raw','30/360 us','30/360 us eom','30/360 us nasd','30/360 eu','30/360 eu2','30/360 eu3','30/360 eu+','30/365','act/360','act/365 fixed','act/365 nonleap','act/act excel','act/act isda','act/act afb']:
                 Specify the day counting convention to use in the account
                 performance calculations.
                 Default: 'raw'
@@ -238,24 +250,16 @@ class Environment(Broker, gym.Env):
         if not isinstance(initial_balance, Real) or (initial_balance <= 0):
             raise ValueError(f'Initial balance {initial_balance} must be a positive number')
 
-        if not isinstance(risk_free_rate, Real) or (risk_free_rate < 0):
-            raise ValueError(f'Risk free rate {risk_free_rate} must not be a negative number')
+        if not isinstance(annual_risk_free_rate, Real) or (annual_risk_free_rate < 0):
+            raise ValueError(f'Annual risk free rate {annual_risk_free_rate} must not be a negative number')
 
-        if not isinstance(day_count_convention, str) or \
-            (day_count_convention not in {'raw', 'actual/365', 'actual/360', '30/360'}):
-            raise ValueError(f'Day count convention {day_count_convention}' \
-                "must be one of: {'raw', 'actual/365', 'actual/360', '30/360'}")
-        if day_count_convention == 'actual/365':
-            dcc = DayCountConvention.ACTUAL_365
-        elif day_count_convention == 'actual/360':
-            dcc = DayCountConvention.ACTUAL_360
-        elif day_count_convention == '30/360':
-            dcc = DayCountConvention.THIRTY_360
-        else:
-            dcc = DayCountConvention.RAW
+        if not isinstance(annual_target_return, Real):
+            raise ValueError(f'Annual target return {annual_target_return} must be a number')
+
         account = Account(initial_balance = initial_balance,
-                          risk_free_rate = risk_free_rate,
-                          convention = dcc)
+            annual_risk_free_rate = annual_risk_free_rate,
+            annual_target_return = annual_target_return,
+            day_count_convention = DayCountConvention.from_string(day_count_convention))
 
         # Setup logging.
         self._log = log if isinstance(log, logging.Logger) \
@@ -407,8 +411,16 @@ class Environment(Broker, gym.Env):
         if self.max_frames_period > 0:
             self.episode_start_datetime = frame.time_start
 
+        # Initialize account performance after account reset.
+        self.account.update_performance(
+            price_high = frame.high, price_low = frame.low,
+            #price_last = self.last_trade.price, datetime_last=self.last_trade.datetime,
+            price_last = frame.close, datetime_last=frame.time_end,
+            price_first=frame.open, datetime_first=frame.time_start)
+
         state = self._make_state()
         self._set_frame_info(frame)
+
         if self.renderer is not None:
             self.renderer.reset(episode_number = self.episode_number,
                                 episode_max_steps = self.episode_max_steps,
@@ -418,12 +430,14 @@ class Environment(Broker, gym.Env):
         return state, frame
 
     def step(self, action: Any) -> Tuple[Union[OrderedDict, None], float, bool, bool, Union[Frame, None]]:
-        # Convert actions to orders.
+        # Based on previous frame, actor made actions.
+        # Convert these actions to orders.
         action_time = self.last_trade.datetime + self.agent_order_delay
         self.action_scheme.process_action(broker = self,
             account = self.account, action = action, time = action_time)
 
-        # Read next frame.
+        # Read next frame and execute orders.
+        # Simulates a trading session for this step.
         frame, truncated = self._get_next_frame()
         if frame is not None:
             # Construct state for the agent.
@@ -432,7 +446,14 @@ class Environment(Broker, gym.Env):
         else:
             truncated = True
             state = None
-                    
+
+        # Simulated trading session ended, update account performance.
+        self.account.update_performance(
+            price_high = frame.high, price_low = frame.low,
+            #price_last = self.last_trade.price, datetime_last=self.last_trade.datetime,
+            price_last = frame.close, datetime_last=frame.time_end,
+            price_first=frame.open, datetime_first=frame.time_start)
+
         # Check for episode completion.
         self.step_number += 1
         if (not truncated) and (self.episode_max_steps is not None):
@@ -456,9 +477,6 @@ class Environment(Broker, gym.Env):
                 self.account.close_position(datetime = self.last_trade.datetime, \
                     price = price, commission = commission, \
                     notes = 'closing on episode end')
-        elif not self.instant_balance_update:
-            self._update_balance(price = self.last_trade.price, \
-                                 datetime = self.last_trade.datetime)
             
         reward = self.reward_scheme.get_reward(env = self, account = self.account)
         terminated = (self.account.is_halted or self.account.balance <= 0) \

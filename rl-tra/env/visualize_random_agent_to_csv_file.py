@@ -99,13 +99,11 @@ env = CsvFileLogger(
     env,
     output_folder='./visualizations/random_agent/',
     name_prefix=f'random_agent_{SCALE_METHOD}{SCALE_PERIOD}_{TIME_FRAME}_{SYMBOL}',
-    max_csv_rows=100000,
+    max_csv_rows=1048000, # Excel row limit 1_048_576
+    max_csv_bytes=20*1024*1024, # 20 MB
     log_episodes_end=True,
     log_episodes_steps=True,
-    log_episodes_delta=1,
-    log_steps_delta=1,
-    separate_steps_file_per_episode=False
-)
+    compress_gzip=True)
 # --------------------------------- loop
 for episode in range(100):
     step = 0

@@ -1,4 +1,4 @@
-from typing import Sequence, Tuple, Union, Callable, Optional
+from typing import Tuple, Union, Callable, Optional
 from numbers import Real
 from collections import OrderedDict
 import math
@@ -37,7 +37,8 @@ class Broker:
             assert (agent_order_delay.total_seconds() > 0)
             self.agent_order_delay = agent_order_delay
         else:
-            raise ValueError('agent_order_delay should be either real number of seconds or a positive timedelta object')
+            raise ValueError('agent_order_delay should be either real number of ' \
+                             'seconds or a positive timedelta object')
             
         # Delay of execution of broker-generated orders in seconds
         if isinstance(broker_order_delay, Real):
@@ -47,7 +48,8 @@ class Broker:
             assert (agent_order_delay.total_seconds() > 0)
             self.broker_order_delay = broker_order_delay
         else:
-            raise ValueError('broker_order_delay should be either real number of seconds or a positive timedelta object')
+            raise ValueError('broker_order_delay should be either real number of ' \
+                             'seconds or a positive timedelta object')
 
         # Chance of execution of orders when price reaches order price
         # but does not move further
@@ -91,9 +93,6 @@ class Broker:
     def add_order(self, order: Union[MarketOrder, LimitOrder, StopOrder, TrailingStopOrder, TakeProfitOrder]) -> int:
         # Check account connected with order
         assert hasattr(order, 'account') and isinstance(order.account, Account) and (order.account == self.account)
-        #if self.account is not None:
-        #    self.account = order.account
-
         # Check order time
         if (self.last_trade is not None) and (order.time_init <= self.last_trade.datetime):
             raise ValueError('Cant add order in past time!')
@@ -141,7 +140,7 @@ class Broker:
         # Update account balance on each trade (which is slow),
         # if instant_balance_update is True
         if self.instant_balance_update:
-            self._update_balance(price = price, datetime = trade_datetime)
+            self._update_price(price = price, datetime = trade_datetime)
             
         # Calculate spread mean and variance
         if (self.last_trade is not None) and (self.last_trade.operation != trade.operation):
@@ -211,7 +210,7 @@ class Broker:
                 # Market order: execute immediately with best price
                 execution_price = best_ask_price if (direction > 0) else best_bid_price
                 commission = self._get_commission(order.operation, order.amount, execution_price)
-                order.account.update(datetime = trade_datetime, operation = order.operation,
+                order.account.execute(datetime = trade_datetime, operation = order.operation,
                     quantity = order.amount, price = execution_price, commission = commission,
                     notes = None)
                 del self.orders[id]
@@ -380,7 +379,7 @@ class Broker:
                 return False
         return True
         
-    def _update_balance(self, price: Real, datetime: Union[Arrow, datetime]):
+    def _update_price(self, price: Real, datetime: Union[Arrow, datetime]):
         if self.account.has_position and not self.account_is_halted:
                 self.account.update_balance(price)
                 # Halt account with negative balance and close its position

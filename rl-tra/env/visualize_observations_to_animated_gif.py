@@ -23,7 +23,7 @@ WHAT = 'binance-klines'
 
 SYMBOL = 'ETHUSDT'
 if WHAT == 'binance-trades':
-    dir = 'D:/data/binance_monthly_trades/'
+    dir = 'data/binance_monthly_trades/'
     provider = BinanceMonthlyTradesProvider(data_dir = dir,
                 symbol = SYMBOL,
                 date_from = date(2024, 5, 1), date_to = date(2024, 5, 31))

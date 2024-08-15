@@ -144,16 +144,12 @@ class MatplotlibPriceRenderer(Renderer):
         self.episode_number = None
         self.current_step = None
         self.current_position = None
-        self.current_twr = None
-        self.current_balance = None
-        self.initial_balance = None
         self.total_reward = None
-        self.risk_free_rate = None
 
         self.figure = None
         self.axes = None
 
-        self.df_lines_columns = ['ror', 'twr', 'sharpe', 'sortino', 'calmar', 'reward', 'total reward', 'max dd pct', 'roi']
+        self.df_lines_columns = ['ror', 'cum ret', 'sharpe', 'sortino', 'calmar', 'reward', 'total reward', 'max dd pct', 'roi']
         self.df_price_columns = ['start', 'open', 'high', 'low', 'close', 'buy', 'sell']
         self.df_price = None
         self.df_lines = None
@@ -174,7 +170,7 @@ class MatplotlibPriceRenderer(Renderer):
         if self.line_history_behavior in [SCROLL, EXPAND]:
             self.row_lines_zero = {
                 'ror': 0,
-                'twr': 0,
+                'cum ret': 0,
                 'sharpe': 0,
                 'sortino': 0,
                 'calmar': 0,
@@ -188,7 +184,7 @@ class MatplotlibPriceRenderer(Renderer):
         elif self.line_history_behavior == SHRINK:
             self.row_lines_nan = {
                 'ror': np.nan,
-                'twr': np.nan,
+                'cum ret': np.nan,
                 'sharpe': np.nan,
                 'sortino': np.nan,
                 'calmar': np.nan,
@@ -212,11 +208,7 @@ class MatplotlibPriceRenderer(Renderer):
         self.episode_number = episode_number
         self.current_step = 0
         self.current_position = self.account.position.quantity_signed
-        self.current_twr = 1.0
-        self.current_balance = self.account.initial_balance
-        self.initial_balance = self.account.initial_balance
         self.total_reward = 0.0
-        self.risk_free_rate = f'(r-f rate {self.account.report.risk_free_rate * 100:.0f}%)'
 
         if self.figure is not None:
             plt.close(self.figure)            
@@ -258,33 +250,39 @@ class MatplotlibPriceRenderer(Renderer):
             self._plot_bars(self.df_price, self.axes[0]) # ax1
 
         row = self.df_lines.iloc[-1]
-        reward = f'reward {row["reward"]:.2f}' \
-            if not row["reward"] is None else 'reward'
-        total_reward = f'total reward {self.total_reward:.2f}' \
-            if not self.total_reward is None else 'total reward'
-        s = f'sharpe ratio {self.risk_free_rate}'
-        sharpe = f'{s}  {row["sharpe"]:.2f}' \
-            if not np.isnan(row["sharpe"]) else s
-        s = f'sortino ratio {self.risk_free_rate}'
-        sortino = f'{s}  {row["sortino"]:.2f}' \
-            if not np.isnan(row["sortino"]) else s
-        s = f'calmar ratio {self.risk_free_rate}'
-        calmar = f'{s}  {row["calmar"]:.2f}' \
-            if not np.isnan(row["calmar"]) else s
-        twr = f'time weighted return {row["twr"]:.2f}%' \
-            if not row["twr"] is None else 'twr ratio'
-        ror = f'rate of return {row["ror"]:.2f}' \
-            if not np.isnan(row["ror"]) else 'rate of return'
-        roi = f'return on investment {row["roi"]:.2f}' \
-            if not np.isnan(row["roi"]) else 'return on investment'
-        maxdd = f'max drawdown {row["max dd pct"]:.2f}' \
-            if not np.isnan(row["max dd pct"]) else 'max drawdown'
+        s = 'reward'
+        v = row['reward']
+        reward = f'{s} {v:.2f}' if not v is None else s
+        s = 'total reward'
+        v = self.total_reward
+        total_reward = f'{s} {v:.2f}' if not v is None else s
+        s = 'sharpe ratio'
+        v = row['sharpe']
+        sharpe = f'{s} {v:.2f}' if not np.isnan(v) else s
+        s = 'sortino ratio'
+        v = row['sortino']
+        sortino = f'{s} {v:.2f}' if not np.isnan(v) else s
+        s = 'calmar ratio'
+        v = row['calmar']
+        calmar = f'{s} {v:.2f}' if not np.isnan(v) else s
+        s = 'cumulative return'
+        v = row['cum ret']
+        cum_ret = f'{s} {v:.2f}%' if not v is None else s
+        s = 'rate of return'
+        v = row['ror']
+        ror = f'{s} {v:.2f}' if not np.isnan(v) else s
+        s = 'return on investment'
+        v = row['roi']
+        roi = f'{s} {v:.2f}' if not np.isnan(v) else s
+        s = 'max drawdown'
+        v = row['max dd pct']
+        maxdd = f'{s} {v:.2f}' if not np.isnan(v) else s
 
         self._plot_column_line(self.df_lines, self.axes[1], 'reward', reward) # ax2_1
         self._plot_column_line(self.df_lines, self.axes[2], 'total reward', total_reward) # ax3_1
         self._plot_column_line(self.df_lines, self.axes[3], 'sharpe', sharpe) # ax2_2
         self._plot_column_line(self.df_lines, self.axes[4], 'sortino', sortino) # ax3_2
-        self._plot_column_line(self.df_lines, self.axes[5], 'twr', twr) # ax2_23
+        self._plot_column_line(self.df_lines, self.axes[5], 'cum ret', cum_ret) # ax2_23
         self._plot_column_line(self.df_lines, self.axes[6], 'ror', ror) # ax2_4
         #self._plot_column_line(self.df_lines, self.axes[7], 'roi', roi) # ax3_4
         #self._plot_column_line(self.df_lines, self.axes[7], 'max dd pct', maxdd) # ax3_4
@@ -403,44 +401,31 @@ class MatplotlibPriceRenderer(Renderer):
             self.df_price.loc[len(self.df_price)] = row_price
 
         self.total_reward += reward
-        balance = self.account.balance
-        balance_return = balance / self.current_balance - 1.0
-        self.current_balance = balance
-        twr = self.current_twr * (balance_return + 1.0)
-        self.current_twr = twr
-        sr = self.account.report.sharpe_ratio
-        if sr is None:
-            sr = np.nan
-        elif sr > 10 or sr < -10:
-            sr = np.nan
-        roi = self.account.report.returns_on_investments
+        sha = self.account.performance.daily.sharpe_ratio()
+        if sha is not None and (sha > 10 or sha < -10):
+            sha = None
+        sor = self.account.performance.daily.sortino_ratio()
+        cal = self.account.performance.daily.calmar_ratio()
+        roi = self.account.performance.roundtrips.returns_on_investments
         if roi is None or len(roi) == 0:
             roi = np.nan
         else:
             roi = roi[-1]
-        perf = self.account.position.roundtrip_performance
-        #rt_np_pnl_pct = perf.net_profit_pnl_percentage
-        #rt_avg_net_wl_pct = perf.average_net_winning_loosing_percentage
-        #roi2 = self.account.max_drawdown
-        #roi2 = self.account.position.roi
-        #roi2 = self.account.report.net_profit
-        roi2 = self.account.report.roi_mean
+        roi2 = self.account.performance.roundtrips.roi_mean
+        ror = self.account.performance.rate_of_return
+        min_dd = self.account.performance.daily._drawdowns_cumulative_min
 
         row_lines = {
-            'ror': self.account.report.ror \
-                if self.account.report.ror is not None else np.nan,
-            'twr': (twr - 1) * 100,
-            'sharpe': sr,
-            'sortino': self.account.report.sortino_ratio \
-                if self.account.report.sortino_ratio is not None else np.nan,
-            'calmar': self.account.report.calmar_ratio \
-                if self.account.report.calmar_ratio is not None else np.nan,
+            'ror': ror if ror is not None else np.nan,
+            'cum ret': self.account.performance.daily.cumulative_return * 100,
+            'sharpe': sha if sha is not None else np.nan,
+            'sortino': sor if sor is not None else np.nan,
+            'calmar': cal if cal is not None else np.nan,
             'reward': reward,
             'total reward': self.total_reward \
                 if self.total_reward is not None else np.nan,
-            'max dd pct': self.account.report.max_drawdown_percent \
-                if self.account.report.max_drawdown_percent is not None else np.nan,
-            'roi': roi2,#rt_avg_net_wl_pct,#rt_np_pnl_pct,#roi,
+            'max dd pct': min_dd * 100 if min_dd is not None else np.nan,
+            'roi': roi2,
             }
         assert set(row_lines.keys()) == set(self.df_lines_columns)
         assert len(row_lines) == len(self.df_lines_columns)

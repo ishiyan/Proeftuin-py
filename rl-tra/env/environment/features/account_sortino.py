@@ -22,7 +22,7 @@ class AccountSortino(Feature):
     def process(self, frames: Sequence[Frame], state: OrderedDict):
         if self.account is None:
             raise ValueError('this feature requires an account to be set by the environment')
-        value = self.account.report.sortino_ratio()
+        value = self.account.performance.daily.sortino_ratio()
         if value is None:
             value = 0.0
         frame = frames[-1]

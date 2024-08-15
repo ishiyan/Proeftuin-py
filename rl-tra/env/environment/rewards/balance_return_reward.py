@@ -116,7 +116,7 @@ class BalanceReturnReward(RewardScheme):
             reward = -reward
 
         # If account.is_halted -> reward = ???
-        # 'pnl': account.report.net_profit / account.initial_balance,
+        # 'pnl': account.performance.roundtrips.total_net_pnl / account.initial_balance,
 
         if account.has_no_position:
             self.consecutive_steps_without_position += 1

@@ -103,8 +103,8 @@ class Roundtrip:
         pnl = quantity * (entry_p - exit_p if side == RoundtripSide.SHORT
             else exit_p - entry_p)
 
-        commission = (entry.commission / entry.quantity +
-                      exit.commission / exit.quantity) * quantity
+        commission = (entry.commission_per_unit +
+                      exit.commission_per_unit) * quantity
 
         highest_p = max(entry.unrealized_price_high, exit.unrealized_price_high)
         lowest_p = min(entry.unrealized_price_low, exit.unrealized_price_low)
