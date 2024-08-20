@@ -291,6 +291,7 @@ class Environment(Broker, gym.Env):
         self.aggregator = aggregator
         self.action_scheme = action_scheme
         self.reward_scheme = reward_scheme
+        self.last_action = None
         self.features_pipeline = features_pipeline
         
         # Keeps list of features which require update on each processed trade.
@@ -420,6 +421,7 @@ class Environment(Broker, gym.Env):
 
         state = self._make_state()
         self._set_frame_info(frame)
+        self.last_action = None
 
         if self.renderer is not None:
             self.renderer.reset(episode_number = self.episode_number,
@@ -435,6 +437,7 @@ class Environment(Broker, gym.Env):
         action_time = self.last_trade.datetime + self.agent_order_delay
         self.action_scheme.process_action(broker = self,
             account = self.account, action = action, time = action_time)
+        self.last_action = action
 
         # Read next frame and execute orders.
         # Simulates a trading session for this step.
