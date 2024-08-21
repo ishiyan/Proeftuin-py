@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ..environment import Environment
-from ..actions import BetOnReturnAction
+from ..actions import BET_ON_FALL
 from ..accounts import Account
 from .reward_scheme import RewardScheme
 
@@ -52,12 +52,12 @@ class BetOnReturnReward(RewardScheme):
         ret = price / self.previous_price - 1.0
         self.previous_price = price
 
-        if env.last_action == BetOnReturnAction.BET_ON_FALL:
+        if env.last_action == BET_ON_FALL:
             ret = -ret
 
         if not self.geometric:
             return ret
-        
+
         prev = self._cumulative_return_plus_1
         self._cumulative_return_plus_1 *= 1.0 + ret
         return self._cumulative_return_plus_1 - prev

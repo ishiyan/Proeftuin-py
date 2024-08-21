@@ -9,12 +9,12 @@ name = 'ppo_02_bet_on_return'
 dir = f'./sb3/{name}/'
 
 start_iteration_number = 1
-total_iterations = 1#100#1000
+total_iterations = 100#1000
 
 episode_max_steps = 180
-learn_episodes = 10#10000#100000#10#1000#10000
+learn_episodes = 10000#100000#10#1000#10000
 
-evaluate_episodes_every_iteration=8 # Set to 0 to disable
+evaluate_episodes_every_iteration=4 # Set to 0 to disable
 verbose=1
 
 #save_on_best_training_reward_callback=None

@@ -41,5 +41,5 @@ class BetOnReturnAction(ActionScheme):
         """
         return BET_ON_RISE
     
-    def process_action(self, broker: Broker, account: Account, action, time: datetime):
+    def process_action(self, broker: Broker, account: Account, action, time: datetime):        
         pass
