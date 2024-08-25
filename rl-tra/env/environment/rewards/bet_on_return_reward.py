@@ -26,7 +26,7 @@ class BetOnReturnReward(RewardScheme):
     will be equal to the cumulative return).
     """
 
-    def __init__(self, geometric: bool = True):
+    def __init__(self, geometric: bool = False, factor: float = 100):
         """
         Initializes the reward scheme.
         Args:
@@ -35,9 +35,12 @@ class BetOnReturnReward(RewardScheme):
                 return.
                 
                 If false, reward is a raw return.
+            factor: float
+                A factor to multiply the return by.
         """
         super().__init__()
         self.geometric = geometric
+        self.factor = factor
         self.previous_price: float = None
         self._cumulative_return_plus_1: float = None
     
@@ -56,8 +59,8 @@ class BetOnReturnReward(RewardScheme):
             ret = -ret
 
         if not self.geometric:
-            return ret
+            return ret * self.factor
 
         prev = self._cumulative_return_plus_1
         self._cumulative_return_plus_1 *= 1.0 + ret
-        return self._cumulative_return_plus_1 - prev
+        return (self._cumulative_return_plus_1 - prev) * self.factor
