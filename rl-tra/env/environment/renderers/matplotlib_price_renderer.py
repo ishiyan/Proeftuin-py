@@ -156,7 +156,7 @@ class MatplotlibPriceRenderer(Renderer):
         self.price_window_delta = None
         if self.price_history_behavior in [SCROLL, EXPAND, SHRINK]:
             self.row_price_nan = {
-            'start': False,
+            'start': 0, #False,
             'open': np.nan,
             'high': np.nan,
             'low': np.nan,
@@ -306,7 +306,7 @@ class MatplotlibPriceRenderer(Renderer):
             if wf < self.episode_max_steps:
                 w = wf
                 wdelta = self.episode_max_steps - wf
-                self.df_price.loc[:, ['start']] = False
+                self.df_price.loc[:, ['start']] = 0 #False
                 self.df_price.loc[:, ['buy', 'sell']] = 0
                 row_price = self.row_price_nan.copy()
                 row_price['open'] = frame.open
@@ -326,12 +326,12 @@ class MatplotlibPriceRenderer(Renderer):
                 row_price['low'] = frame.low
                 row_price['close'] = frame.close
                 if i == w-1:
-                    row_price['start'] = True
+                    row_price['start'] = 1 #True
                 self.df_price.iloc[i + wdelta] = row_price
         elif self.price_history_behavior == EXPAND:
             self.df_price = pd.DataFrame({col: [np.nan] * self.episode_max_steps \
                                         for col in self.df_price_columns})
-            self.df_price.loc[:, ['start']] = False
+            self.df_price.loc[:, ['start']] = 0 #False
             self.df_price.loc[:, ['buy', 'sell']] = 0
             row_price = self.row_price_nan.copy()
             row_price['open'] = frame.open
@@ -504,7 +504,7 @@ class MatplotlibPriceRenderer(Renderer):
         self._plot_title(ax)
 
         # Draw vertical lines where 'start' is True
-        start_indices = df[df['start']].index
+        start_indices = df[df['start']==1].index
         for idx in start_indices:
             ax.axvline(x=idx, color=self.colors['start'], linewidth=1)
 
@@ -534,7 +534,7 @@ class MatplotlibPriceRenderer(Renderer):
         self._plot_title(ax)
 
         # Draw vertical lines where 'start' is True
-        start_indices = df[df['start']].index
+        start_indices = df[df['start']==1].index
         for idx in start_indices:
             ax.axvline(x=idx, color=self.colors['start'], linewidth=1)
 
