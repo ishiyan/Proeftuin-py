@@ -48,7 +48,9 @@ if __name__=="__main__":
             #model.set_random_seed(iteration)
             model._last_obs = None
         else:
-            model = PPO('MultiInputPolicy', env, seed=iteration, verbose=verbose)
+            #model = PPO('MultiInputPolicy', env, seed=iteration, verbose=verbose)
+            #model = PPO('MultiInputPolicy', env, verbose=verbose)
+            model = PPO('MlpPolicy', env, verbose=verbose)
 
         try:
             # 24576 12288 6144 3072 1536 768 384 192 96 48 24 12 6 3
@@ -71,7 +73,7 @@ if __name__=="__main__":
             env = create_env(which='subproc', iteration=iteration, eval=True)
             try:
                 model = PPO.load(saved_model_path, env=env, verbose=verbose, print_system_info=True)
-                model.set_random_seed(iteration)
+                #model.set_random_seed(iteration)
                 model._last_obs = None
                 mean_reward, std_reward = evaluate_policy(model, env=env, deterministic=True,
                     n_eval_episodes=evaluate_episodes_every_iteration)
