@@ -8,7 +8,7 @@ from sb3 import create_save_on_best_training_reward_callback, cleanup_model_env
 name = 'ppo_02_bet_on_return'
 dir = f'./sb3/{name}/'
 
-start_iteration_number = 1
+start_iteration_number = 75
 total_iterations = 100#1000
 
 episode_max_steps = 180
@@ -45,7 +45,7 @@ if __name__=="__main__":
         saved_model_path = os.path.join(dir, f'{name}_model.zip')
         if os.path.exists(saved_model_path):
             model = PPO.load(saved_model_path, env=env, verbose=verbose, print_system_info=True)
-            model.set_random_seed(iteration)
+            #model.set_random_seed(iteration)
             model._last_obs = None
         else:
             model = PPO('MultiInputPolicy', env, seed=iteration, verbose=verbose)

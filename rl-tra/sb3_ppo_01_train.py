@@ -5,8 +5,8 @@ from stable_baselines3.common.evaluation import evaluate_policy
 from sb3 import create_single_env01, create_vec_env01, save_evaluation_statistics
 from sb3 import create_save_on_best_training_reward_callback, cleanup_model_env
 
-name = 'ppo_01_xxx'
-dir = f'./sb3/{name}-new/'
+name = 'ppo_01'
+dir = f'./sb3/{name}/'
 
 start_iteration_number = 1
 total_iterations = 100#1000
