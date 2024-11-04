@@ -4,7 +4,6 @@ from collections import OrderedDict
 import math
 import random
 from datetime import timedelta, datetime
-from arrow import Arrow
 import numpy as np
 
 from .accounts import Account
@@ -368,7 +367,7 @@ class Broker:
         for trade in trades:
             self.process_trade(trade)
 
-    def _order_is_valid(self, order, time: Union[datetime, Arrow]) -> bool:
+    def _order_is_valid(self, order, time: datetime) -> bool:
         if (order is None) or (order.account != self.account) or \
             self.account_is_halted or (order.time_init is None):
             return False
@@ -379,14 +378,14 @@ class Broker:
                 return False
         return True
         
-    def _update_price(self, price: Real, datetime: Union[Arrow, datetime]):
+    def _update_price(self, price: Real, datetime: datetime):
         if self.account.has_position and not self.account_is_halted:
                 self.account.update_balance(price)
                 # Halt account with negative balance and close its position
                 if self.halt_account_if_negative_balance and self.account.balance < 0:
                     self._halt_account(datetime)
                     
-    def _halt_account(self, dt: Union[Arrow, datetime]):
+    def _halt_account(self, dt: datetime):
         if not self.halt_account_if_negative_balance:
             return None
         # Mark account as halted

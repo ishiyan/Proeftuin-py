@@ -22,6 +22,7 @@ class TimeEncoder(Feature):
     - `day of year` offset: [0,1], where 0 - January 1st and 1- December 31
     - `day of week` offset: [0,1], where 0 - Monday, 1 - Sunday
     - `time of day` offset: [0,1], where 0 - 00:00:00, 1 - 23:59:59
+    - `time of week` offset: [0,1], where 0 - Monday 00:00:00, 1 - Sunday 23:59:59
 
     Args:
         source (str or Sequence[str]):
@@ -32,6 +33,8 @@ class TimeEncoder(Feature):
             If output the day of week. Default: True
         tday (bool):
             If output the time of day. Default: True
+        tweek (bool):
+            If output the time of week. Default: False
         write_to {'frame','state','both'}:
             Destination of where to put computed values.
     """
@@ -41,6 +44,7 @@ class TimeEncoder(Feature):
                  yday=True,
                  wday=True,
                  tday=True,
+                 tweek=False,
                  write_to: Literal['frame', 'state', 'both'] = 'state'):
         super().__init__(write_to=write_to)
         if isinstance(source, str):
@@ -53,10 +57,12 @@ class TimeEncoder(Feature):
         self.yday = yday
         self.wday = wday
         self.tday = tday
+        self.tweek = tday
         self.length = 0
         self.length += 1 if yday else 0
         self.length += 1 if wday else 0
         self.length += 1 if tday else 0
+        self.length += 1 if tweek else 0
         for name in self.source:
             assert isinstance(name, str)
             if self.yday:
@@ -65,6 +71,8 @@ class TimeEncoder(Feature):
                 self.names.append(f'wday_{name}')
             if self.tday:
                 self.names.append(f'tday_{name}')
+            if self.tweek:
+                self.names.append(f'tweek_{name}')
         if write_to in {'state', 'both'} and self.length > 0:
             self.spaces = OrderedDict({name: gym.spaces.Box(0, 1, shape=(1,)) for name in self.names})
         else:
@@ -94,6 +102,11 @@ class TimeEncoder(Feature):
                 time = (datetime.timestamp() - day_start.timestamp()) / float(24 * 60 * 60)
             else:
                 time = 0.0
+            # Calculate time of week offset.
+            if self.tweek:
+                tw = (datetime.isoweekday() - 1 + (datetime.timestamp() - day_start.timestamp()) / float(24 * 60 * 60)) / 7
+            else:
+                tw = 0.0
             # Write out values.
             off = self.length * i
             if self.write_to_frame:
@@ -106,6 +119,9 @@ class TimeEncoder(Feature):
                     cnt += 1
                 if self.tday:
                     setattr(last_frame, self.names[off + cnt], time)
+                    cnt += 1
+                if self.tweek:
+                    setattr(last_frame, self.names[off + cnt], tw)
             if self.write_to_state:
                 cnt = 0
                 if self.yday:
@@ -116,6 +132,8 @@ class TimeEncoder(Feature):
                     cnt += 1
                 if self.tday:
                     state[self.names[off + cnt]] = time
+                if self.tweek:
+                    state[self.names[off + cnt]] = tw
     
     def __repr__(self):
         return f'{self.__class__.__name__}(source={self.source}, write_to={self.write_to})'
