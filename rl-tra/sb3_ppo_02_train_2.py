@@ -1,12 +1,11 @@
 import os
 from stable_baselines3 import PPO
 from stable_baselines3.common.evaluation import evaluate_policy
-from sb3_contrib import RecurrentPPO # pip install sb3-contrib
 
 from sb3 import create_single_env02, create_vec_env02, save_evaluation_statistics
 from sb3 import create_save_on_best_training_reward_callback, cleanup_model_env
 
-name = 'ppo-lstm_02_bet_on_return'
+name = 'ppo_02_bet_on_return_2'
 dir = f'./sb3/{name}/'
 
 start_iteration_number = 1
@@ -45,13 +44,13 @@ if __name__=="__main__":
 
         saved_model_path = os.path.join(dir, f'{name}_model.zip')
         if os.path.exists(saved_model_path):
-            model = RecurrentPPO.load(saved_model_path, env=env, verbose=verbose, print_system_info=True)
+            model = PPO.load(saved_model_path, env=env, verbose=verbose, print_system_info=True)
             #model.set_random_seed(iteration)
             model._last_obs = None
         else:
-            #model = RecurrentPPO('MultiInputLstmPolicy', env, seed=iteration, verbose=verbose)
-            model = RecurrentPPO('MultiInputLstmPolicy', env, verbose=verbose)
-            #model = RecurrentPPO('MlpLstmPolicy', env, verbose=verbose)
+            #model = PPO('MultiInputPolicy', env, seed=iteration, verbose=verbose)
+            model = PPO('MultiInputPolicy', env, verbose=verbose)
+            #model = PPO('MlpPolicy', env, verbose=verbose)
 
         try:
             # 24576 12288 6144 3072 1536 768 384 192 96 48 24 12 6 3
@@ -73,7 +72,7 @@ if __name__=="__main__":
             os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
             env = create_env(which='subproc', iteration=iteration, eval=True)
             try:
-                model = RecurrentPPO.load(saved_model_path, env=env, verbose=verbose, print_system_info=True)
+                model = PPO.load(saved_model_path, env=env, verbose=verbose, print_system_info=True)
                 #model.set_random_seed(iteration)
                 model._last_obs = None
                 mean_reward, std_reward = evaluate_policy(model, env=env, deterministic=True,
