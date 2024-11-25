@@ -1,10 +1,11 @@
 # Neural Networks: Zero to Hero
 
-[Andrej Karpathy](https://karpathy.ai/)
+This is compliled from videos and repos of [Andrej Karpathy](https://karpathy.ai/)
 
-A course on neural networks that starts all the way at the basics. The course is a series of YouTube videos where we code and train neural networks together. The Jupyter notebooks we build in the videos are then captured here inside the [lectures](lectures/) directory. Every lecture also has a set of exercises included in the video description. (This may grow into something more respectable).
-
----
+A course on neural networks that starts all the way at the basics.
+The course is a series of YouTube videos where we code and train neural networks together.
+The Jupyter notebooks we build in the videos are then captured here.
+Every lecture also has a set of exercises included in the video description. (This may grow into something more respectable).
 
 ## Lecture 1: The spelled-out intro to neural networks and backpropagation: building micrograd
 
@@ -15,11 +16,15 @@ Original material:
 - [YouTube video lecture](https://www.youtube.com/watch?v=VMj-3S1tku0)
 - [Jupyter notebook files](https://github.com/karpathy/nn-zero-to-hero/lectures/micrograd)
 - [micrograd Github repo](https://github.com/karpathy/micrograd)
+- [colab exercises](https://colab.research.google.com/drive/1FPTx1RXtBfc4MaTkf7viZZD4U2F9gtKN?usp=sharing)
 
 My copies of notebooks:
 
 - [micrograd demo](micrograd_demo.ipynb)
 - [micrograd trace graph](micrograd_trace_graph.ipynb)
+- [video lecture notebook 1](micrograd_lecture_first_half_roughly.ipynb)
+- [video lecture notebook 2](micrograd_lecture_second_half_roughly.ipynb)
+- [exercises](micrograd_exercises.ipynb)
 
 To run micrograd unit tests, run
 
@@ -29,7 +34,7 @@ python -m unittest discover -s micrograd_test
 
 ---
 
-**Lecture 2: The spelled-out intro to language modeling: building makemore**
+## Lecture 2: The spelled-out intro to language modeling: building makemore
 
 We implement a bigram character-level language model, which we will further complexify in followup videos into a modern Transformer language model, like GPT. In this video, the focus is on (1) introducing torch.Tensor and its subtleties and use in efficiently evaluating neural networks and (2) the overall framework of language modeling that includes model training, sampling, and the evaluation of a loss (e.g. the negative log likelihood for classification).
 
