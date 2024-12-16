@@ -1,6 +1,6 @@
 # Neural Networks: Zero to Hero
 
-This is compliled from videos and repos of [Andrej Karpathy](https://karpathy.ai/)
+This is a compliation of videos and repos of [Andrej Karpathy](https://karpathy.ai/)
 
 A course on neural networks that starts all the way at the basics.
 The course is a series of YouTube videos where we code and train neural networks together.
@@ -114,7 +114,7 @@ We take the 2-layer MLP from previous video and make it deeper with a tree-like 
 - [YouTube video lecture](https://youtu.be/t3YJ5hKiMQ0)
 - [Jupyter notebook files](lectures/makemore/makemore_part5_cnn1.ipynb)
 
-## Lecture 7: Let's build GPT: from scratch, in code, spelled out.
+## Lecture 7: Let's build GPT: from scratch, in code, spelled out
 
 We build a Generatively Pretrained Transformer (GPT), following the paper "Attention is All You Need" and OpenAI's GPT-2 / GPT-3. We talk about connections to ChatGPT, which has taken the world by storm. We watch GitHub Copilot, itself a GPT, help us write a GPT (meta :D!) . I recommend people watch the earlier makemore videos to get comfortable with the autoregressive language modeling framework and basics of tensors and PyTorch nn, which we take for granted in this video.
 
@@ -124,10 +124,50 @@ We build a Generatively Pretrained Transformer (GPT), following the paper "Atten
 
 The Tokenizer is a necessary and pervasive component of Large Language Models (LLMs), where it translates between strings and tokens (text chunks). Tokenizers are a completely separate stage of the LLM pipeline: they have their own training sets, training algorithms (Byte Pair Encoding), and after training implement two fundamental functions: encode() from strings to tokens, and decode() back from tokens to strings. In this lecture we build from scratch the Tokenizer used in the GPT series from OpenAI. In the process, we will see that a lot of weird behaviors and problems of LLMs actually trace back to tokenization. We'll go through a number of these issues, discuss why tokenization is at fault, and why someone out there ideally finds a way to delete this stage entirely.
 
+Minimal, clean code for the (byte-level) Byte Pair Encoding (BPE) algorithm commonly used in LLM tokenization. The BPE algorithm is "byte-level" because it runs on UTF-8 encoded strings.
+
+This algorithm was popularized for LLMs by the [GPT-2 paper](https://d4mucfpksywv.cloudfront.net/better-language-models/language_models_are_unsupervised_multitask_learners.pdf) and the associated GPT-2 [code release](https://github.com/openai/gpt-2) from OpenAI. [Sennrich et al. 2015](https://arxiv.org/abs/1508.07909) is cited as the original reference for the use of BPE in NLP applications. Today, all modern LLMs (e.g. GPT, Llama, Mistral) use this algorithm to train their tokenizers.
+
+There are two Tokenizers in this repository, both of which can perform the 3 primary functions of a Tokenizer: 1) train the tokenizer vocabulary and merges on a given text, 2) encode from text to tokens, 3) decode from tokens to text. The files of the repo are as follows:
+
+1. [base.py](minbpe/base.py): Implements the `Tokenizer` class, which is the base class. It contains the `train`, `encode`, and `decode` stubs, save/load functionality, and there are also a few common utility functions. This class is not meant to be used directly, but rather to be inherited from.
+2. [basic.py](minbpe/basic.py): Implements the `BasicTokenizer`, the simplest implementation of the BPE algorithm that runs directly on text.
+3. [regex.py](minbpe/regex.py): Implements the `RegexTokenizer` that further splits the input text by a regex pattern, which is a preprocessing stage that splits up the input text by categories (think: letters, numbers, punctuation) before tokenization. This ensures that no merges will happen across category boundaries. This was introduced in the GPT-2 paper and continues to be in use as of GPT-4. This class also handles special tokens, if any.
+4. [gpt4.py](minbpe/gpt4.py): Implements the `GPT4Tokenizer`. This class is a light wrapper around the `RegexTokenizer` (2, above) that exactly reproduces the tokenization of GPT-4 in the [tiktoken](https://github.com/openai/tiktoken) library. The wrapping handles some details around recovering the exact merges in the tokenizer, and the handling of some unfortunate (and likely historical?) 1-byte token permutations.
+
+Finally, the script [minbpe_train.py](minbpe_train.py) trains the two major tokenizers on the input text tests/taylorswift.txt (this is the Wikipedia entry for her kek) and saves the vocab to disk for visualization.
+We use the pytest library for tests. All of them are located in the `minbpe_test/` directory. First `pip install pytest` if you haven't already, then:
+
+```bash
+python -m unittest discover -s minbpe_test
+```
+
+Original material:
+
 - [YouTube video lecture](https://www.youtube.com/watch?v=zduSFxRajkE)
 - [minBPE code](https://github.com/karpathy/minbpe)
-- [Google Colab](https://colab.research.google.com/drive/1y0KnCFZvGVf_odSfcNAws6kcDD7HsI0L?usp=sharing)
+- [Colab notebook](https://www.youtube.com/redirect?event=video_description&redir_token=QUFFLUhqbmZrOFlGYWtCSTVFU2kzOEFOQlU2anJfc3otZ3xBQ3Jtc0tsMzk2NWQ1VEpmQURTQXdOa1piaFZ1cUV4aVlHZzFRd1E3WXIwbEhGTGJMd3FSOXFDbHdueGdLVDdPUTRDZlNsRmhYclRNNG5uTkJEZlVkOUJkSEpCUkxpUk81NjVmLVRwMjhRT0VMR3dOM21RWlFJSQ&q=https%3A%2F%2Fcolab.research.google.com%2Fdrive%2F1y0KnCFZvGVf_odSfcNAws6kcDD7HsI0L%3Fusp%3Dsharing&v=zduSFxRajkE)
 
----
-Ongoing...
-**License** MIT
+Supplementary links:
+
+- [Wikipedia article on BPE](https://en.wikipedia.org/wiki/Byte_pair_encoding)
+- [tiktokenizer](https://tiktokenizer.vercel.app)
+- [tiktoken from OpenAI](https://github.com/openai/tiktoken)
+- [sentencepiece from Google](https://github.com/google/sentencepiece)
+- [GPT-2 code release from OpenAI](https://github.com/openai/gpt-2)
+
+Papers:
+
+- [GPT-2 paper](https://d4mucfpksywv.cloudfront.net/better-language-models/language_models_are_unsupervised_multitask_learners.pdf) [local](articles/language-models-are-unsupervised-multitask-learners-2019-radford.pdf)
+- [Sennrich et al. 2015](https://arxiv.org/abs/1508.07909) [local](articles/Neural-Machine-Translation-of-Rare-Words-with-Subword-Units-1508.07909v5.pdf)
+
+My copies of notebooks:
+
+- [Colab notebook](tokenization.ipynb) [python](tokenization.py)
+
+[1](https://github.com/tizianfischer/paper1_fxpred/tree/master)
+[2](https://data-science-blog.com/blog/2021/04/07/multi-head-attention-mechanism/)
+[2a](https://gist.github.com/TaiToTo/143a6ec357792764e65e7bb80f393e69#file-mha_wp_4-ipynb)
+[2b](https://github.com/TaiToTo/Transformer_blog_codes)
+[3](https://medium.com/dataness-ai/understanding-temporal-fusion-transformer-9a7a4fcde74b)
+[4]{https://medium.com/@ejcacciatore/the-transformer-revolution-in-financial-markets-technical-insights-applications-and-caveats-34806db92e8e}
