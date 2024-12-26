@@ -171,3 +171,10 @@ My copies of notebooks:
 [2b](https://github.com/TaiToTo/Transformer_blog_codes)
 [3](https://medium.com/dataness-ai/understanding-temporal-fusion-transformer-9a7a4fcde74b)
 [4]{https://medium.com/@ejcacciatore/the-transformer-revolution-in-financial-markets-technical-insights-applications-and-caveats-34806db92e8e}
+[5](https://github.com/sktime/pytorch-forecasting)
+[6](https://github.com/huseinzol05/Stock-Prediction-Models)
+[7](https://github.com/lucidrains/rotary-embedding-torch)
+[8](https://pytorch.org/docs/stable/generated/torch.nn.Transformer.html)
+[9](https://deepanshusachdeva5.medium.com/understanding-transformers-step-by-step-word-embeddings-4f4101e7c2f)
+[10](https://platform.openai.com/tokenizer)
+[11](https://github.com/flairNLP/flair/tree/master/resources/docs/embeddings)
