@@ -203,5 +203,9 @@ My copies of notebooks:
 
 [d1](https://huggingface.co/blog/autoformer)
 [d2](https://quantdare.com/transformers-is-attention-all-we-need-in-finance-part-i/)
-[d3](https://quantdare.com/transformers-is-attention-all-we-need-in-finance-part-ii/
-)
+[d3](https://quantdare.com/transformers-is-attention-all-we-need-in-finance-part-ii/)
+
+[e1](https://github.com/BBieganowski/pymicrostructure/tree/main)
+[e2](https://www.turingfinance.com/computational-investing-with-python-week-one/)
+[e3](https://github.com/braverock/PerformanceAnalytics/blob/master/R/DownsideSharpeRatio.R)
+[e4](https://quantopian.github.io/empyrical/_modules/empyrical/stats.html)
