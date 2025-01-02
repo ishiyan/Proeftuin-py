@@ -1,0 +1,19 @@
+# C:\Users\ivas\AppData\Local\anaconda3\python.exe
+from openai import OpenAI
+
+# export OPENAI_API_KEY="xxx"
+client = OpenAI()
+#client = OpenAI(api_key = "")
+
+completion = client.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {
+            "role": "user",
+            "content": "Write a haiku about recursion in programming."
+        }
+    ]
+)
+
+print(completion.choices[0].message)

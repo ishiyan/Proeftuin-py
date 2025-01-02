@@ -170,7 +170,7 @@ My copies of notebooks:
 [2a](https://gist.github.com/TaiToTo/143a6ec357792764e65e7bb80f393e69#file-mha_wp_4-ipynb)
 [2b](https://github.com/TaiToTo/Transformer_blog_codes)
 [3](https://medium.com/dataness-ai/understanding-temporal-fusion-transformer-9a7a4fcde74b)
-[4]{https://medium.com/@ejcacciatore/the-transformer-revolution-in-financial-markets-technical-insights-applications-and-caveats-34806db92e8e}
+[4](https://medium.com/@ejcacciatore/the-transformer-revolution-in-financial-markets-technical-insights-applications-and-caveats-34806db92e8e)
 [5](https://github.com/sktime/pytorch-forecasting)
 [6](https://github.com/huseinzol05/Stock-Prediction-Models)
 [7](https://github.com/lucidrains/rotary-embedding-torch)
