@@ -1,5 +1,7 @@
 # Python Deep Dive
 
+[Udemy](https://saxobank.udemy.com/certificate/UC-8d0665a8-7145-45ac-aa2d-04892eb52ed7/)
+
 Instructor: [Fred Baptiste](https://saxobank.udemy.com/user/fredbaptiste/), professional developer and mathematician.
 
 Many of these require Python 3.6 or above.
